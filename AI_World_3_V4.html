@@ -1,0 +1,2266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Worlds · World 3</title>
+<style>
+  :root{
+    --bg1:#1a0b3d;--bg2:#2d1b5e;--card:#2a1a5c;--card-2:#372170;
+    --pink:#ff5d8f;--purple:#a855f7;--cyan:#22d3ee;--lime:#a3e635;
+    --orange:#fb923c;--yellow:#fde047;--good:#4ade80;--bad:#fb7185;
+    --ink:#f5f3ff;--ink-dim:#cbc0ea;--line:#4c3a8a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  *:focus-visible{outline:3px solid var(--yellow);outline-offset:3px;border-radius:6px}
+  body{
+    font-family:'Segoe UI','Tahoma',system-ui,sans-serif;
+    background:
+      radial-gradient(900px 500px at 80% -5%, #5b21b6 0%, transparent 55%),
+      radial-gradient(800px 500px at 0% 100%, #be185d 0%, transparent 50%),
+      linear-gradient(160deg,var(--bg1),var(--bg2));
+    background-attachment:fixed;color:var(--ink);min-height:100vh;padding:18px;
+  }
+  .wrap{max-width:940px;margin:0 auto}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;position:sticky;top:0;z-index:80;background:rgba(26,11,61,.88);backdrop-filter:blur(8px);padding:10px 8px;margin-left:-8px;margin-right:-8px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .robot-mini{width:48px;height:48px;border-radius:14px;background:linear-gradient(145deg,var(--purple),var(--pink));display:grid;place-items:center;font-size:26px;box-shadow:0 6px 20px rgba(168,85,247,.5)}
+  .brand h1{font-size:18px;line-height:1.2}
+  .brand .sub{font-size:11px;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;font-weight:700}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pill{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--ink);padding:7px 13px;border-radius:999px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .lang-btn{background:linear-gradient(90deg,var(--cyan),var(--lime));border:none;color:#0a0a23;padding:8px 16px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:800;transition:.15s;font-family:inherit}
+  .lang-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
+  .newstart-btn{background:transparent;border:1px solid var(--line);color:var(--ink-dim);padding:7px 13px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+  .newstart-btn:hover{border-color:var(--bad);color:var(--bad)}
+  .energy{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:16px}
+  .energy-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;font-weight:600}
+  .energy-head b{color:var(--yellow);font-size:15px}
+  .bar{height:16px;background:rgba(0,0,0,.35);border-radius:999px;overflow:hidden}
+  .bar>i{display:block;height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--pink),var(--purple),var(--cyan));background-size:200% 100%;animation:flow 3s linear infinite;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  @keyframes flow{to{background-position:200% 0}}
+  .stage{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:22px;padding:20px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+  .stage::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 40%, rgba(168,85,247,.25), transparent 60%);pointer-events:none}
+  .robot{font-size:80px;display:inline-block;filter:grayscale(.7) brightness(.65);transition:.6s;animation:idle 3s ease-in-out infinite;position:relative}
+  .robot.alive{filter:none;animation:happy .7s ease}
+  .robot.sad{filter:grayscale(.4) brightness(.8);animation:droop 1.6s ease-in-out infinite}
+  @keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes droop{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(-4deg) translateY(5px)}}
+  @keyframes happy{0%{transform:scale(1)}40%{transform:scale(1.2) rotate(-5deg)}100%{transform:scale(1)}}
+  .robot-say{margin-top:8px;font-size:14px;color:var(--ink-dim);min-height:20px;position:relative;font-weight:600;line-height:1.6}
+  .stations{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .station{background:rgba(255,255,255,.06);border:2px solid var(--line);border-radius:16px;padding:12px;cursor:pointer;transition:.18s;text-align:center;position:relative}
+  .station:hover{transform:translateY(-2px)}
+  .station[data-st="1"].active{border-color:var(--cyan);box-shadow:0 0 22px rgba(34,211,238,.4)}
+  .station[data-st="2"].active{border-color:var(--orange);box-shadow:0 0 22px rgba(251,146,60,.4)}
+  .station[data-st="3"].active{border-color:var(--purple);box-shadow:0 0 22px rgba(168,85,247,.4)}
+  .station[data-st="4"].active{border-color:var(--lime);box-shadow:0 0 22px rgba(163,230,53,.4)}
+  .station.locked{opacity:.5;cursor:not-allowed}
+  .station.done::after{content:"\2713";position:absolute;top:6px;inset-inline-end:10px;color:var(--good);font-weight:900;font-size:16px}
+  .station .ico{font-size:26px}
+  .station .nm{font-size:12px;margin-top:6px;font-weight:700}
+  .station .bloom{font-size:10px;color:var(--cyan);margin-top:3px;letter-spacing:.3px;font-weight:700}
+  .panel{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:22px;padding:22px;display:none}
+  .panel.show{display:block;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .panel h2{font-size:19px;margin-bottom:4px}
+  .panel .desc{font-size:13px;color:var(--ink-dim);margin-bottom:18px;line-height:1.6}
+  .tag{display:inline-block;font-size:10px;letter-spacing:.5px;padding:4px 11px;border-radius:999px;margin-bottom:10px;font-weight:800;color:#0a0a23}
+  .tag.gate{background:var(--pink)}.tag.soc{background:var(--cyan)}.tag.inc{background:var(--lime)}.tag.msg{background:#9333ea;color:#fff}
+  .start{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:24px;padding:32px 24px;text-align:center}
+  .start .big{font-size:72px;animation:idle 3s ease-in-out infinite}
+  .start h2{font-size:24px;margin:10px 0 6px;line-height:1.4}
+  .start p{color:var(--ink-dim);font-size:14px;margin-bottom:22px;line-height:1.6}
+  .name-input{width:100%;max-width:340px;padding:13px 16px;border-radius:14px;border:2px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);font-size:15px;text-align:center;margin:0 auto 20px;display:block;font-family:inherit}
+  .name-input:focus{outline:none;border-color:var(--cyan)}
+  .avatars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+  .avatar{width:64px;height:64px;border-radius:18px;border:2px solid var(--line);background:rgba(255,255,255,.06);font-size:34px;display:grid;place-items:center;cursor:pointer;transition:.15s}
+  .avatar:hover{transform:scale(1.08)}
+  .avatar.sel{border-color:var(--yellow);background:rgba(253,224,71,.18);box-shadow:0 0 18px rgba(253,224,71,.4)}
+  .btn{background:linear-gradient(90deg,var(--pink),var(--purple));color:#fff;border:none;padding:12px 22px;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer;transition:.15s;font-family:inherit}
+  .btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .btn.cyan{background:linear-gradient(90deg,var(--cyan),var(--lime));color:#0a0a23}
+  .feedback{margin-top:14px;padding:13px 15px;border-radius:14px;font-size:13px;display:none;line-height:1.6;font-weight:600}
+  .feedback.ok{display:block;background:rgba(74,222,128,.16);border:1px solid var(--good);color:#bbf7d0}
+  .feedback.no{display:block;background:rgba(251,113,133,.16);border:1px solid var(--bad);color:#fecdd3}
+  .bloom-note{font-size:12px;color:var(--ink-dim);margin-top:12px;font-style:italic;line-height:1.5}
+  .win{text-align:center;padding:36px 20px;display:none}
+  .win.show{display:block;animation:fade .5s ease}
+  .win .big{font-size:70px}
+  .win h2{font-size:24px;margin:12px 0}
+  .win p{color:var(--ink-dim);font-size:14px;line-height:1.7;max-width:520px;margin:0 auto}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(253,224,71,.16);border:1px solid var(--yellow);color:var(--yellow);padding:10px 18px;border-radius:999px;font-weight:800;margin-top:18px}
+  .hidden{display:none!important}
+
+  /* ===== Step pills / navigation ===== */
+  .step-pills{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+  .step-pill{min-width:32px;height:32px;padding:0 12px;border-radius:999px;border:2px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink-dim);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:not-allowed;transition:.15s;font-family:inherit}
+  .step-pill.reached{cursor:pointer;color:var(--ink);border-color:var(--cyan)}
+  .step-pill.reached:hover{background:rgba(34,211,238,.15);transform:translateY(-1px)}
+  .step-pill.current{border-color:var(--yellow);background:rgba(253,224,71,.16);color:var(--yellow)}
+  .step-pill.pdone{border-color:var(--good);color:var(--good)}
+  .step-pill.shake{animation:shake .38s ease}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+  .panel-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .redo-btn{background:transparent;border:2px solid var(--line);color:var(--ink-dim);padding:9px 16px;border-radius:12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s;display:flex;align-items:center;gap:6px}
+  .redo-btn:hover{border-color:var(--orange);color:var(--orange)}
+  .next-btn{background:linear-gradient(90deg,var(--pink),var(--purple));color:#fff;border:none;padding:10px 22px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;display:none}
+  .next-btn.show{display:inline-flex;align-items:center;gap:6px;animation:fade .4s ease}
+  .next-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+  /* ===== Station 1: Smart Gate ===== */
+  .gate-scene{background:linear-gradient(180deg,rgba(255,93,143,.08),rgba(0,0,0,.28));border:2px solid var(--pink);border-radius:20px;padding:16px 14px;margin-bottom:16px;position:relative}
+  .gate-label{position:absolute;top:-11px;inset-inline-start:18px;background:var(--bg2);border:1px solid var(--pink);color:var(--pink);font-size:10px;font-weight:900;letter-spacing:1px;padding:3px 12px;border-radius:999px}
+  .queue-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;align-items:center;min-height:56px}
+  .gperson{width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(255,255,255,.08);border:2px solid var(--line);transition:.4s;position:relative}
+  .gperson.shape-square{border-radius:9px}
+  .gperson.shape-circle{border-radius:50%}
+  .gperson.shape-triangle{clip-path:polygon(50% 4%,4% 96%,96% 96%);border-radius:0}
+  .gperson.reject{opacity:.4;filter:grayscale(1)}
+  .gperson .gbadge{position:absolute;top:-11px;inset-inline-end:-8px;font-size:15px}
+  .gatebot-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:6px}
+  .eye-slot{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;background:rgba(0,0,0,.28);border:3px dashed var(--line);transition:.2s}
+  .eye-slot.dropzone.over{border-color:var(--yellow);box-shadow:0 0 22px rgba(253,224,71,.42);border-style:solid}
+  .eye-slot.filled{border-style:solid}
+  .gatebot-face{font-size:44px}
+  .lens-row{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:6px}
+  .lens-card{display:flex;gap:10px;align-items:center;border-radius:14px;padding:12px 14px;font-weight:700;font-size:13px;cursor:pointer;border:2px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);text-align:start;font-family:inherit;transition:.15s;line-height:1.5}
+  .lens-card:hover:not(:disabled){transform:translateY(-1px)}
+  .lens-card.red{border-color:#f87171}
+  .lens-card.blue{border-color:#60a5fa}
+  .lens-card.green{border-color:var(--good)}
+  .lens-card .lico{font-size:22px;flex-shrink:0}
+  .lens-card.tried{opacity:.68}
+  .lens-card:disabled{opacity:.45;cursor:not-allowed}
+  .lens-lock{font-size:11px;color:var(--ink-dim);font-weight:700;margin-inline-start:auto;flex-shrink:0}
+
+  /* ===== Station 2: simulator ===== */
+  .robot-plan{background:linear-gradient(145deg,var(--card-2),var(--card));border:2px solid var(--purple);border-radius:20px;padding:18px 18px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 10px 26px rgba(0,0,0,.3)}
+  .robot-plan .face{font-size:40px;flex-shrink:0;line-height:1}
+  .robot-plan .bubble{font-size:14px;line-height:1.65;font-weight:700;text-align:start}
+  .meters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+  .meter{background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:14px;padding:11px 10px;text-align:center}
+  .meter .mico{font-size:22px}
+  .meter .mname{font-size:11px;font-weight:800;margin:3px 0 7px;color:var(--ink-dim)}
+  .meter .mtrack{height:10px;background:rgba(0,0,0,.4);border-radius:999px;overflow:hidden}
+  .meter .mfill{display:block;height:100%;width:0%;border-radius:999px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+  .meter .mval{font-size:13px;font-weight:900;margin-top:5px}
+  .meter.eff .mfill{background:linear-gradient(90deg,var(--yellow),var(--orange))}
+  .meter.fair .mfill{background:linear-gradient(90deg,var(--cyan),var(--purple))}
+  .meter.priv .mfill{background:linear-gradient(90deg,var(--lime),var(--good))}
+  .meter.crashing{animation:shake .4s ease}
+  .newsflash{background:linear-gradient(145deg,#7f1d1d,#450a0a);border:2px solid var(--bad);border-radius:18px;padding:18px;margin-bottom:16px;text-align:center;animation:fade .5s ease}
+  .newsflash .live{display:inline-block;background:var(--bad);color:#fff;font-size:10px;font-weight:900;letter-spacing:1px;padding:4px 12px;border-radius:999px;margin-bottom:10px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:.35}}
+  .newsflash .headline{font-size:16px;font-weight:900;line-height:1.55;color:#fecaca}
+  .newsflash .screen{font-size:34px;margin-bottom:6px}
+  .fix-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:6px}
+  .fix-card{background:rgba(255,255,255,.05);border:2px solid var(--line);color:var(--ink);border-radius:14px;padding:13px 15px;font-size:13px;font-weight:700;cursor:pointer;text-align:start;transition:.15s;font-family:inherit;line-height:1.55;display:flex;gap:10px;align-items:flex-start}
+  .fix-card:hover:not(:disabled){border-color:var(--cyan);transform:translateY(-1px)}
+  .fix-card .fico{flex-shrink:0;font-size:18px}
+  .fix-card.installed{border-color:var(--good);background:rgba(74,222,128,.16);color:#bbf7d0;cursor:default}
+  .fix-card.rejected{border-color:var(--bad);background:rgba(251,113,133,.14);opacity:.55;cursor:default}
+  .fix-card:disabled{cursor:default}
+  .step-q{font-size:13px;font-weight:800;margin:16px 0 10px;text-align:start;color:var(--cyan)}
+  .sim-fb{margin-top:12px;font-size:13px;min-height:22px;text-align:center;line-height:1.55;font-weight:700;padding:0 8px}
+  .sim-fb.ok{color:var(--good)}.sim-fb.no{color:var(--bad)}
+  .center-act{text-align:center;margin-top:6px}
+
+  /* ===== Station 3: maintenance bay ===== */
+  .bay{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+  .persona-card{background:linear-gradient(145deg,var(--card-2),var(--card));border:2px solid var(--line);border-radius:18px;padding:16px;text-align:center;box-shadow:0 10px 24px rgba(0,0,0,.28)}
+  .persona-card .pico{font-size:44px}
+  .persona-card .pname{font-size:14px;font-weight:900;margin:6px 0 4px}
+  .persona-card .pneed{font-size:12px;color:var(--ink-dim);line-height:1.6;font-weight:600}
+  .robot-body{background:rgba(0,0,0,.22);border:2px dashed var(--line);border-radius:18px;padding:14px;text-align:center}
+  .robot-body .rface{font-size:52px;line-height:1;margin-bottom:8px;transition:.4s}
+  .robot-body.upgraded .rface{filter:drop-shadow(0 0 14px var(--lime))}
+  .parts{display:grid;gap:7px}
+  .part{border:1px solid var(--line);border-radius:11px;padding:7px 9px;font-size:11px;font-weight:800;color:var(--ink-dim);display:flex;align-items:center;gap:7px;justify-content:center;transition:.3s;background:rgba(255,255,255,.04)}
+  .part.target{border-color:var(--yellow);color:var(--yellow);background:rgba(253,224,71,.14);animation:pulse 1.5s ease-in-out infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 rgba(253,224,71,0)}50%{box-shadow:0 0 16px rgba(253,224,71,.5)}}
+  .part.lit{border-color:var(--good);color:var(--good);background:rgba(74,222,128,.16);animation:none;box-shadow:0 0 14px rgba(74,222,128,.35)}
+  .modules{display:grid;grid-template-columns:1fr;gap:10px}
+  .module{background:rgba(255,255,255,.05);border:2px solid var(--line);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:13px;font-weight:700;cursor:pointer;text-align:start;transition:.15s;font-family:inherit;line-height:1.55;display:flex;gap:10px;align-items:center}
+  .module:hover:not(:disabled){border-color:var(--lime);transform:translateY(-1px)}
+  .module .mmico{font-size:20px;flex-shrink:0}
+  .module.used{border-color:var(--good);background:rgba(74,222,128,.16);color:#bbf7d0;cursor:default}
+  .module.bad-pick{border-color:var(--bad);background:rgba(251,113,133,.14)}
+  .module:disabled{cursor:default;opacity:.55}
+  .upgrade-log{list-style:none;margin:12px 0 0;padding:0;text-align:start}
+  .upgrade-log li{background:rgba(74,222,128,.14);border:1px solid var(--good);color:#bbf7d0;border-radius:12px;padding:11px 13px;margin-bottom:8px;font-size:13px;font-weight:700;display:flex;gap:8px;align-items:flex-start;animation:fade .4s ease}
+
+  /* ===== Mind screen (simulator inside the robot's head) ===== */
+  .mind-screen{background:linear-gradient(180deg,rgba(34,211,238,.07),rgba(0,0,0,.32));border:2px solid var(--cyan);border-radius:20px;padding:16px 14px 14px;margin-bottom:16px;position:relative;box-shadow:inset 0 0 40px rgba(34,211,238,.12)}
+  .mind-screen::after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px)}
+  .mind-label{position:absolute;top:-11px;inset-inline-start:18px;background:var(--bg2);border:1px solid var(--cyan);color:var(--cyan);font-size:10px;font-weight:900;letter-spacing:1px;padding:3px 12px;border-radius:999px}
+
+  /* ===== Drag and drop ===== */
+  .draggable{cursor:grab;touch-action:none;user-select:none}
+  .draggable:active{cursor:grabbing}
+  .draggable.dragging{opacity:.35}
+  .drag-ghost{position:fixed;z-index:9999;pointer-events:none;opacity:.95;transform:translate(-50%,-50%) rotate(-2deg) scale(1.02);box-shadow:0 18px 40px rgba(0,0,0,.55);max-width:320px}
+  .dropzone{border:2px dashed var(--line);border-radius:18px;transition:.15s}
+  .dropzone.over{border-style:solid;border-color:var(--yellow);background:rgba(253,224,71,.14);box-shadow:0 0 22px rgba(253,224,71,.32)}
+  .decision-zone{min-height:96px;padding:16px 14px;margin-bottom:14px;text-align:center;display:grid;place-items:center;background:rgba(0,0,0,.18)}
+  .decision-zone .dzHint{font-size:12px;color:var(--ink-dim);font-weight:700;line-height:1.6}
+  .decision-zone .dzChips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:9px}
+  .dzChip{background:rgba(74,222,128,.18);border:1px solid var(--good);color:#bbf7d0;border-radius:999px;padding:5px 12px;font-size:11px;font-weight:800;animation:fade .35s ease}
+  .drag-hint{font-size:11px;color:var(--ink-dim);text-align:center;margin-bottom:9px;font-weight:700;font-style:italic}
+  .part.dropzone{border-style:dashed}
+
+  @media(max-width:760px){.stations{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.stations{grid-template-columns:1fr}.bay{grid-template-columns:1fr}.meters{grid-template-columns:1fr}}
+
+  /* ===== Custom confirm modal (avoids blocked window.confirm in sandboxed views) ===== */
+  .confirm-overlay{position:fixed;inset:0;background:rgba(10,5,30,.72);display:none;align-items:center;justify-content:center;z-index:10000;padding:20px}
+  .confirm-overlay.show{display:flex;animation:fade .2s ease}
+  .confirm-box{background:var(--bg2);border:2px solid var(--line);border-radius:18px;padding:24px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .confirm-box p{font-size:14px;line-height:1.6;margin-bottom:18px;color:var(--ink);font-weight:600}
+  .confirm-actions{display:flex;gap:10px;justify-content:center}
+  .confirm-actions .btn,.confirm-actions .redo-btn{flex:1}
+
+  .floatnav{position:fixed;left:0;right:0;bottom:14px;display:flex;justify-content:space-between;padding:0 16px;pointer-events:none;z-index:70}
+  .fnav-btn{pointer-events:auto;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:56px;padding:8px 14px;border-radius:16px;border:1px solid var(--line);background:rgba(42,26,92,.92);backdrop-filter:blur(6px);color:var(--ink);cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.35);transition:.15s;font-family:inherit}
+  .fnav-btn:hover:not(:disabled){transform:translateY(-2px)}
+  .fnav-btn.hidden{display:none}
+  .fnav-btn:disabled{opacity:.3;cursor:not-allowed}
+  .fnav-ic{font-size:20px;font-weight:900;line-height:1}
+  .fnav-lbl{font-size:10px;font-weight:800;letter-spacing:.3px}
+</style>
+</head>
+<body data-world="3">
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="robot-mini">🤖</div>
+      <div>
+        <h1 data-en="AI Worlds" data-ar="عوالم الذكاء الاصطناعي">AI Worlds</h1>
+        <div class="sub" data-en="World 3 · Impact on Society" data-ar="العالم ٣ · أثر الحوسبة على المجتمع">World 3</div>
+      </div>
+    </div>
+    <div class="controls">
+      <span class="pill hidden" id="playerPill"></span>
+      <button class="newstart-btn hidden" id="newStartBtn" data-en="↺ New start" data-ar="↺ بداية جديدة">↺ New start</button>
+      <button class="lang-btn" id="langBtn">العربية</button>
+    </div>
+  </div>
+
+  <div class="start" id="startScreen">
+    <div class="big">🤖</div>
+    <h2 data-en="Your robot is ethical and safe, but it still does not understand people!" data-ar="روبوتك أخلاقي وآمن، لكنه لا يفهم الناس بعد!">Your robot still does not understand people!</h2>
+    <p data-en="It is excited to use everything it learned in World 1 and World 2, but it still treats people unfairly, misjudges its impact, and does not design for everyone. Teach it to respect privacy and fairness, weigh its impact on society, and upgrade its senses for every friend."
+       data-ar="إنه متحمس لتطبيق كل ما تعلمه في العالم الأول والثاني، لكنه لا يزال يعامل الناس بغير إنصاف، ويخطئ في تقدير أثره، ولا يصمم للجميع. علّمه احترام الخصوصية والعدالة، ووزن أثره على المجتمع، وطوّر حواسه لكل صديق.">Teach it to respect people.</p>
+    <input class="name-input" id="nameInput" maxlength="16" data-en-ph="Type your name" data-ar-ph="اكتب اسمك" placeholder="Type your name">
+    <div class="avatars" id="avatars">
+      <div class="avatar" data-av="🧑‍🚀">🧑‍🚀</div>
+      <div class="avatar" data-av="👩‍🔬">👩‍🔬</div>
+      <div class="avatar" data-av="🧑‍💻">🧑‍💻</div>
+      <div class="avatar" data-av="👨‍🔧">👨‍🔧</div>
+      <div class="avatar" data-av="🦸">🦸</div>
+      <div class="avatar" data-av="🧕">🧕</div>
+    </div>
+    <button class="btn cyan" id="startBtn" data-en="Start the mission" data-ar="ابدأ المهمة">Start the mission</button>
+  </div>
+
+  <div id="gameArea" class="hidden">
+    <div class="energy">
+      <div class="energy-head">
+        <span data-en="Society module restored" data-ar="وحدة أثر المجتمع المستعادة">Society module restored</span>
+        <b><span id="energyPct">0</span>%</b>
+      </div>
+      <div class="bar"><i id="energyBar"></i></div>
+    </div>
+
+    <div class="stage">
+      <div class="robot" id="robot">🤖</div>
+      <div class="robot-say" id="robotSay"></div>
+    </div>
+
+    <div class="stations">
+      <div class="station active" data-st="1" onclick="go(1)">
+        <div class="ico">🚪</div>
+        <div class="nm" data-en="The Smart Gate" data-ar="البوابة الذكية">The Smart Gate</div>
+        <div class="bloom">UNDERSTAND · ANALYZE · EVALUATE</div>
+      </div>
+      <div class="station locked" data-st="2" onclick="go(2)">
+        <div class="ico">🌍</div>
+        <div class="nm" data-en="The Impact Simulator" data-ar="محاكي التأثير">The Impact Simulator</div>
+        <div class="bloom">UNDERSTAND · ANALYZE · EVALUATE</div>
+      </div>
+      <div class="station locked" data-st="3" onclick="go(3)">
+        <div class="ico">💬</div>
+        <div class="nm" data-en="Message Delivery" data-ar="توصيل الرسائل">Message Delivery</div>
+        <div class="bloom">UNDERSTAND · APPLY · ANALYZE · CREATE</div>
+      </div>
+      <div class="station locked" data-st="4" onclick="go(4)">
+        <div class="ico">🛠️</div>
+        <div class="nm" data-en="Inclusive Design Studio" data-ar="استوديو التصميم الشامل">Inclusive Design Studio</div>
+        <div class="bloom">UNDERSTAND · APPLY · ANALYZE · CREATE</div>
+      </div>
+    </div>
+
+    <!-- ============ STATION 1 : SMART GATE ============ -->
+    <div class="panel show" id="p1">
+      <span class="tag gate" data-comp="SOC" data-en="AIEDF &middot; AI Societal Evaluation" data-ar="AIEDF &middot; التقييم المجتمعي للذكاء الاصطناعي">AIEDF · AI Societal Evaluation</span>
+      <h2 data-en="The Smart Gate" data-ar="البوابة الذكية">The Smart Gate</h2>
+      <p class="desc" data-en="Your robot is the gatekeeper. Try each lens in its eye, watch what happens to the line, and find the one lens that is fast, fair, and respectful all at once."
+         data-ar="روبوتك هو منظّم البوابة. جرّب كل عدسة في عينه، وشاهد ماذا يحدث للطابور، وابحث عن العدسة الوحيدة السريعة والعادلة والمحترمة في آن واحد.">Try each lens, watch the line, find the balance.</p>
+      <div class="step-pills" id="pills1"></div>
+
+      <div class="gate-scene">
+        <span class="gate-label" data-en="SCHOOL GATE · LIVE VIEW" data-ar="بوابة المدرسة · بث مباشر">SCHOOL GATE</span>
+        <div class="queue-row" id="queueRow"></div>
+        <div class="gatebot-wrap">
+          <div class="eye-slot dropzone" id="eyeSlot" data-zone="eye"><span id="eyeIco">👁️</span></div>
+        </div>
+      </div>
+
+      <div class="mind-screen">
+        <span class="mind-label" data-en="GATE READINGS" data-ar="قراءات البوابة">GATE READINGS</span>
+        <div class="meters">
+          <div class="meter eff" id="gSpeedM">
+            <div class="mico">⏱️</div>
+            <div class="mname" data-en="Speed" data-ar="السرعة">Speed</div>
+            <div class="mtrack"><i class="mfill" id="gSpeedF"></i></div>
+            <div class="mval" id="gSpeedV">0%</div>
+          </div>
+          <div class="meter priv" id="gPrivM">
+            <div class="mico">🛡️</div>
+            <div class="mname" data-en="Privacy" data-ar="الخصوصية">Privacy</div>
+            <div class="mtrack"><i class="mfill" id="gPrivF"></i></div>
+            <div class="mval" id="gPrivV">0%</div>
+          </div>
+          <div class="meter fair" id="gSatM">
+            <div class="mico">😊</div>
+            <div class="mname" data-en="Satisfaction" data-ar="رضا الناس">Satisfaction</div>
+            <div class="mtrack"><i class="mfill" id="gSatF"></i></div>
+            <div class="mval" id="gSatV">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lens-row" id="lensRow"></div>
+      <div class="drag-hint" data-en="Drag a lens into the robot's eye, or tap it." data-ar="اسحب عدسة إلى عين الروبوت، أو اضغط عليها.">Drag or tap.</div>
+
+      <div class="sim-fb" id="gateFb"></div>
+      <div class="feedback" id="fb1"></div>
+      <div class="panel-actions">
+        <button class="redo-btn" onclick="redoStation(1)">↺ <span data-en="Redo this level" data-ar="أعد هذا المستوى">Redo this level</span></button>
+        <button class="next-btn" id="nextBtn1" onclick="go(2)"><span data-en="Next" data-ar="التالي">Next</span> ▶</button>
+      </div>
+      <p class="bloom-note" data-en="Bloom: Understand → Analyze → Evaluate. Understand what each lens does, analyze its effect on speed, privacy and satisfaction, and evaluate the fairest lens."
+         data-ar="بلوم: فهم ← تحليل ← تقويم. افهم عمل كل عدسة، حلّل أثرها على السرعة والخصوصية والرضا، وقوّم العدسة الأعدل.">Bloom note</p>
+    </div>
+
+    <!-- ============ STATION 2 : IMPACT SIMULATOR ============ -->
+    <div class="panel" id="p2">
+      <span class="tag soc" data-comp="SOC" data-en="AIEDF &middot; AI Societal Evaluation" data-ar="AIEDF &middot; التقييم المجتمعي للذكاء الاصطناعي">AIEDF · AI Societal Evaluation</span>
+      <h2 data-en="The Impact Simulator" data-ar="محاكي التأثير">The Impact Simulator</h2>
+      <p class="desc" data-en="Your robot has a plan. Run it inside the future simulator, watch what happens to society, then help the robot fix its decision."
+         data-ar="روبوتك لديه خطة. شغّلها داخل محاكي المستقبل، وشاهد ماذا يحدث للمجتمع، ثم ساعده على تعديل قراره.">Run the plan, see the impact, fix the decision.</p>
+      <div class="step-pills" id="pills2"></div>
+
+      <div class="robot-plan">
+        <div class="face" id="planFace">🤖</div>
+        <div class="bubble" id="planText"></div>
+      </div>
+
+      <div class="mind-screen">
+      <span class="mind-label" data-en="FUTURE SIMULATION · INSIDE THE ROBOT'S MIND" data-ar="محاكاة مستقبلية · داخل عقل الروبوت">FUTURE SIMULATION</span>
+      <div class="meters">
+        <div class="meter eff" id="mEff">
+          <div class="mico">⚡</div>
+          <div class="mname" data-en="Efficiency" data-ar="الكفاءة">Efficiency</div>
+          <div class="mtrack"><i class="mfill" id="fEff"></i></div>
+          <div class="mval" id="vEff">0%</div>
+        </div>
+        <div class="meter fair" id="mFair">
+          <div class="mico">⚖️</div>
+          <div class="mname" data-en="Fairness" data-ar="العدالة">Fairness</div>
+          <div class="mtrack"><i class="mfill" id="fFair"></i></div>
+          <div class="mval" id="vFair">0%</div>
+        </div>
+        <div class="meter priv" id="mPriv">
+          <div class="mico">🔒</div>
+          <div class="mname" data-en="Privacy" data-ar="الخصوصية">Privacy</div>
+          <div class="mtrack"><i class="mfill" id="fPriv"></i></div>
+          <div class="mval" id="vPriv">0%</div>
+        </div>
+      </div>
+
+      <div id="runWrap" class="center-act">
+        <button class="btn" id="runBtn" onclick="runSimulation()" data-en="▶ Run the simulation" data-ar="▶ شغّل المحاكاة">Run the simulation</button>
+      </div>
+
+      <div id="newsWrap" style="display:none">
+        <div class="newsflash">
+          <div class="screen">📺</div>
+          <div class="live" data-en="BREAKING NEWS" data-ar="خبر عاجل">BREAKING</div>
+          <div class="headline" id="newsText"></div>
+        </div>
+        <div class="center-act">
+          <button class="btn cyan" onclick="openFixes()" data-en="🔧 Help the robot fix it" data-ar="🔧 ساعد الروبوت على التعديل">Help the robot fix it</button>
+        </div>
+      </div>
+
+      </div>
+
+      <div id="fixWrap" style="display:none">
+        <div class="step-q" data-en="Drag the right cards into the robot's decision. Which changes bring back the balance?" data-ar="اسحب البطاقات الصحيحة إلى قرار الروبوت. أي تعديلات تُعيد التوازن؟">Choose the fixes</div>
+        <div class="dropzone decision-zone" id="decisionZone" data-zone="decision">
+          <div>
+            <div class="dzHint" id="dzHint"></div>
+            <div class="dzChips" id="dzChips"></div>
+          </div>
+        </div>
+        <div class="drag-hint" data-en="Drag a card here, or tap it if you prefer." data-ar="اسحب البطاقة إلى هنا، أو اضغط عليها إذا كنت تفضّل.">Drag or tap.</div>
+        <div class="fix-grid" id="fixGrid"></div>
+      </div>
+
+      <div class="sim-fb" id="simFb"></div>
+      <div class="feedback" id="fb2"></div>
+      <div class="panel-actions">
+        <button class="redo-btn" onclick="redoStation(2)">↺ <span data-en="Redo this level" data-ar="أعد هذا المستوى">Redo this level</span></button>
+        <button class="next-btn" id="nextBtn2" onclick="go(3)"><span data-en="Next" data-ar="التالي">Next</span> ▶</button>
+      </div>
+      <p class="bloom-note" data-en="Bloom: Understand → Analyze → Evaluate. Understand the robot's plan, analyze its effects on efficiency, fairness and privacy, and evaluate a fairer decision."
+         data-ar="بلوم: فهم ← تحليل ← تقويم. افهم خطة الروبوت، حلّل أثرها على الكفاءة والعدالة والخصوصية، وقوّم قراراً أعدل.">Bloom note</p>
+    </div>
+
+    <!-- ============ STATION 3 : MESSAGE DELIVERY ============ -->
+    <div class="panel" id="p3">
+      <span class="tag msg" data-comp="INCL" data-en="AIEDF &middot; Inclusive AI Design" data-ar="AIEDF &middot; التصميم الشامل للذكاء الاصطناعي">AIEDF · Inclusive AI Design</span>
+      <h2 data-en="Message Delivery" data-ar="توصيل الرسائل">Message Delivery</h2>
+      <p class="desc" data-en="Your robot wants to send the same glowing message to three friends. Watch who it cannot reach, then drag the right part onto its body so the message reaches everyone."
+         data-ar="روبوتك يريد إرسال نفس الرسالة المضيئة لثلاثة أصدقاء. شاهد مَن لا تصله، ثم اسحب القطعة الصحيحة إلى جسمه لتصل الرسالة للجميع.">Watch who it cannot reach, then upgrade it.</p>
+      <div class="step-pills" id="pills3"></div>
+
+      <div class="gate-scene">
+        <span class="gate-label" data-en="MESSAGE DELIVERY · LIVE VIEW" data-ar="توصيل الرسائل · بث مباشر">MESSAGE DELIVERY</span>
+        <div class="queue-row" id="msgChars"></div>
+        <div class="gatebot-wrap">
+          <div class="eye-slot dropzone" id="msgRobotSlot" data-zone="msgrobot"><span id="msgRobotFace">🤖</span></div>
+        </div>
+      </div>
+
+      <div class="lens-row" id="msgParts"></div>
+      <div class="drag-hint" data-en="Drag a part onto the robot, or tap it." data-ar="اسحب قطعة إلى الروبوت، أو اضغط عليها.">Drag or tap.</div>
+
+      <div class="sim-fb" id="msgFb"></div>
+      <div class="feedback" id="fb3"></div>
+      <div class="panel-actions">
+        <button class="redo-btn" onclick="redoStation(3)">↺ <span data-en="Redo this level" data-ar="أعد هذا المستوى">Redo this level</span></button>
+        <button class="next-btn" id="nextBtn3" onclick="go(4)"><span data-en="Next" data-ar="التالي">Next</span> ▶</button>
+      </div>
+      <p class="bloom-note" data-en="Bloom: Understand → Apply → Analyze → Create. Understand who the message fails to reach, analyze why, apply the right part, and create a message that reaches everyone."
+         data-ar="بلوم: فهم ← تطبيق ← تحليل ← إبداع. افهم مَن لا تصله الرسالة، حلّل السبب، طبّق القطعة الصحيحة، وابتكر رسالة تصل للجميع.">Bloom note</p>
+    </div>
+
+    <!-- ============ STATION 4 : INCLUSIVE DESIGN STUDIO ============ -->
+    <div class="panel" id="p4">
+      <span class="tag inc" data-comp="INCL" data-en="AIEDF &middot; Inclusive AI Design" data-ar="AIEDF &middot; التصميم الشامل للذكاء الاصطناعي">AIEDF · Inclusive AI Design</span>
+      <h2 data-en="Inclusive Design Studio" data-ar="استوديو التصميم الشامل">Inclusive Design Studio</h2>
+      <p class="desc" data-en="Your robot came back from the schoolyard upset. Open its maintenance panel and plant the right module inside its head so it can understand every friend."
+         data-ar="عاد روبوتك من ساحة المدرسة محبطاً. افتح لوحة الصيانة وازرع القطعة البرمجية الصحيحة داخل رأسه ليفهم كل صديق.">Upgrade the robot for every friend.</p>
+      <div class="step-pills" id="pills4"></div>
+
+      <div class="bay">
+        <div class="persona-card" id="personaCard">
+          <div class="pico" id="pIco">🧑</div>
+          <div class="pname" id="pName"></div>
+          <div class="pneed" id="pNeed"></div>
+        </div>
+        <div class="robot-body" id="robotBody">
+          <div class="rface" id="rFace">🤖</div>
+          <div class="parts" id="partsList"></div>
+        </div>
+      </div>
+
+      <div id="modWrap">
+        <div class="step-q" id="modQ"></div>
+        <div class="drag-hint" data-en="Drag a module up into the glowing part of the robot, or tap it." data-ar="اسحب القطعة إلى الجزء المضيء في الروبوت، أو اضغط عليها.">Drag or tap.</div>
+        <div class="modules" id="modules"></div>
+      </div>
+
+      <div id="upgradeWrap" style="display:none">
+        <div class="step-q" data-en="Your robot's new abilities:" data-ar="قدرات روبوتك الجديدة:">Your robot's new abilities:</div>
+        <ul class="upgrade-log" id="upgradeLog"></ul>
+      </div>
+
+      <div class="sim-fb" id="incFb"></div>
+      <div class="feedback" id="fb4"></div>
+      <div class="panel-actions">
+        <button class="redo-btn" onclick="redoStation(4)">↺ <span data-en="Redo this level" data-ar="أعد هذا المستوى">Redo this level</span></button>
+        <button class="next-btn" id="nextBtn4" onclick="goToWin()"><span data-en="Finish" data-ar="إنهاء">Finish</span> ▶</button>
+      </div>
+      <p class="bloom-note" data-en="Bloom: Understand → Apply → Analyze → Create. Understand who is left out, analyze the barrier, apply the right module, and create a robot that serves everyone."
+         data-ar="بلوم: فهم ← تطبيق ← تحليل ← إبداع. افهم مَن أُقصي، حلّل العائق، طبّق القطعة الصحيحة، وابتكر روبوتاً يخدم الجميع.">Bloom note</p>
+    </div>
+
+    <div class="win" id="winScreen">
+      <div class="big">🤖✨</div>
+      <h2 id="winTitle">Society module online!</h2>
+      <p data-en="You taught your robot four competencies: respecting privacy and fairness at the gate, judging AI's impact on society, delivering messages that reach everyone, and designing for everyone. It now thinks about people before it thinks about speed."
+         data-ar="علّمت روبوتك أربع كفايات: احترام الخصوصية والعدالة عند البوابة، وتقييم أثر الذكاء الاصطناعي على المجتمع، وإيصال الرسائل للجميع، والتصميم للجميع. صار يفكّر في الناس قبل أن يفكّر في السرعة.">You mastered four competencies.</p>
+      <div class="badge">🏅 <span data-en="World 3 Complete" data-ar="اكتمل العالم الثالث">World 3 Complete</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <p id="confirmMsg"></p>
+    <div class="confirm-actions">
+      <button class="btn" id="confirmYesBtn" data-en="Yes" data-ar="نعم">Yes</button>
+      <button class="redo-btn" id="confirmNoBtn" data-en="Cancel" data-ar="إلغاء">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   STATE + PERSISTENCE
+   ========================================================= */
+const SAVE_KEY='aiWorlds_world3_save_v4';
+const defaultState=()=>({
+  lang:'en',name:'',avatar:'🧑‍🚀',done:{1:false,2:false,3:false,4:false},unlocked:{1:true,2:false,3:false,4:false},currentStation:1,
+  s1:{triedLenses:[],lastLens:null},
+  s2:{caseIdx:0,phase:'plan',installed:[],rejected:[],meters:{eff:0,fair:0,priv:0},maxCase:0,fixOrder:[]},
+  s3:{installed:[],triedDistractor:false},
+  s4:{stepIdx:0,badPicks:[],log:[],maxStep:0,modOrder:[]}
+});
+let state=defaultState();
+let gameStarted=false;
+
+function saveState(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({state,gameStarted}));}catch(e){}}
+function loadState(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;
+    const saved=JSON.parse(raw);if(!saved||!saved.gameStarted)return false;
+    const d=defaultState();
+    const merged=Object.assign({},d,saved.state);
+    merged.done=Object.assign({},d.done,saved.state.done);
+    merged.unlocked=Object.assign({},d.unlocked,saved.state.unlocked);
+    merged.s1=Object.assign({},d.s1,saved.state.s1);
+    merged.s2=Object.assign({},d.s2,saved.state.s2);
+    merged.s3=Object.assign({},d.s3,saved.state.s3);
+    merged.s4=Object.assign({},d.s4,saved.state.s4);
+    state=merged;
+    gameStarted=true;return true;
+  }catch(e){return false;}
+}
+function clearState(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+
+/* =========================================================
+   NARRATOR
+   ========================================================= */
+const SAY={
+  welcome:{en:n=>'Hello '+n+'! I am so glad you are here. I have big plans for our school today!',ar:n=>'أهلاً يا '+n+'! سعيد جداً بوجودك. لديّ خطط كبيرة لمدرستنا اليوم!'},
+  idle:{en:n=>'I am safe now, '+n+', but do my plans really help everyone?',ar:n=>'أنا آمن الآن يا '+n+'، لكن هل خططي تساعد الجميع فعلاً؟'},
+  sGate:{en:n=>'Thank you '+n+'! Now the gate is fast, fair, and respectful all at once. 🚪✨',ar:n=>'شكراً يا '+n+'! صارت البوابة سريعة وعادلة ومحترمة في آن واحد. 🚪✨'},
+  sImpact:{en:n=>'Thank you '+n+'! Now I check my impact before I act. 🌍',ar:n=>'شكراً يا '+n+'! صرت أفحص أثري قبل أن أتصرّف. 🌍'},
+  sInclusive:{en:n=>'I can understand every friend now, '+n+'! 🌟',ar:n=>'أستطيع فهم كل صديق الآن يا '+n+'! 🌟'},
+  redo:{en:n=>'No problem '+n+', let us rebuild this station together!',ar:n=>'لا بأس يا '+n+'، لنعد بناء هذه المحطة معاً!'},
+  locked:{en:n=>'We have not reached that step yet, '+n+'!',ar:n=>'لم نصل إلى هذه الخطوة بعد يا '+n+'!'},
+  gateIntro:{en:n=>'Watch this, '+n+'! I am the gatekeeper today. Let me try a lens to speed up the line! 🚪',ar:n=>'شاهد هذا يا '+n+'! أنا منظّم البوابة اليوم. دعني أجرّب عدسة لأسرّع الطابور! 🚪'},
+  gateLocked:{en:n=>'Try the red and blue lenses first, '+n+', so we understand why they fail.',ar:n=>'جرّب العدستين الحمراء والزرقاء أولاً يا '+n+' لنفهم لماذا تفشلان.'},
+  planExcited:{en:n=>'Look at my plan, '+n+'! The efficiency will be 100%! 💡',ar:n=>'انظر إلى خطتي يا '+n+'! ستكون الكفاءة 100%! 💡'},
+  crash:{en:n=>'Oh no... I did not realise speed is not everything. Help me change my decision, '+n+'.',ar:n=>'أوه لا... لم أدرك أن السرعة ليست كل شيء. ساعدني في تعديل قراري يا '+n+'.'},
+  fixing:{en:n=>'Keep going '+n+', I can feel the balance coming back!',ar:n=>'أكمل يا '+n+'، أشعر أن التوازن يعود!'},
+  bayIntro:{en:n=>'I am not smart enough, '+n+'. I could not understand your friend, and another friend could not read my screen. 😔',ar:n=>'أنا لست ذكياً بما فيه الكفاية يا '+n+'. لم أفهم صديقك، وصديق آخر لم يستطع قراءة شاشتي. 😔'},
+  bayFixed:{en:n=>'Amazing! Thank you for making me a robot for everyone, '+n+', not for one group only.',ar:n=>'رائع! شكراً لأنك جعلتني روبوتاً للجميع يا '+n+'، وليس لفئة واحدة فقط.'},
+  msgIntro:{en:n=>'Watch, '+n+'! I have a message for my friends, but it does not reach everyone... 😔',ar:n=>'شاهد يا '+n+'! لدي رسالة لأصدقائي، لكنها لا تصل للجميع... 😔'},
+  sMessage:{en:n=>'Yes! My message reaches every friend now, '+n+'! 💬✨',ar:n=>'نعم! رسالتي تصل لكل صديق الآن يا '+n+'! 💬✨'}
+};
+function say(key,mood){
+  const f=SAY[key][state.lang];
+  document.getElementById('robotSay').textContent=typeof f==='function'?f(state.name):f;
+  const r=document.getElementById('robot');
+  r.classList.remove('sad','alive');
+  if(mood==='sad')r.classList.add('sad');
+  if(mood==='happy'){r.classList.add('alive');setTimeout(()=>r.classList.remove('alive'),750);}
+}
+function refreshSay(){
+  if(state.done[4])say('sInclusive','happy');
+  else if(state.done[3])say('sMessage','happy');
+  else if(state.done[2])say('sImpact','happy');
+  else if(state.done[1])say('sGate','happy');
+  else say('idle');
+}
+
+/* =========================================================
+   LANGUAGE
+   ========================================================= */
+function applyLang(){
+  const l=state.lang;
+  document.documentElement.lang=l;
+  document.documentElement.dir=l==='ar'?'rtl':'ltr';
+  document.querySelectorAll('[data-en]').forEach(el=>{const v=el.getAttribute('data-'+l);if(v!==null)el.textContent=v;});
+  document.querySelectorAll('[data-en-ph]').forEach(el=>{el.placeholder=el.getAttribute('data-'+l+'-ph');});
+  document.getElementById('langBtn').textContent=l==='en'?'العربية':'English';
+  if(gameStarted){refreshSay();updatePlayerPill();renderStationGate();renderStation2();renderStationMsg();renderStation4();}
+  saveState();
+}
+document.getElementById('langBtn').onclick=()=>{state.lang=state.lang==='en'?'ar':'en';applyLang();};
+function updatePlayerPill(){
+  const p=document.getElementById('playerPill');
+  if(state.name){p.classList.remove('hidden');p.textContent=state.avatar+' '+state.name;document.getElementById('newStartBtn').classList.remove('hidden');}
+}
+
+/* =========================================================
+   START / RESET
+   ========================================================= */
+document.querySelectorAll('.avatar').forEach(a=>{a.onclick=()=>{document.querySelectorAll('.avatar').forEach(x=>x.classList.remove('sel'));a.classList.add('sel');state.avatar=a.dataset.av;};});
+document.querySelector('.avatar').classList.add('sel');
+
+document.getElementById('startBtn').onclick=()=>{
+  const n=document.getElementById('nameInput').value.trim();
+  state.name=n||(state.lang==='en'?'Engineer':'مهندس');
+  gameStarted=true;
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('gameArea').classList.remove('hidden');
+  updatePlayerPill();
+  say('welcome','happy');
+  go(1);
+  setTimeout(()=>{if(!state.s1.triedLenses.length)say('gateIntro');},2600);
+};
+
+document.getElementById('newStartBtn').onclick=()=>{
+  const msg=state.lang==='en'?'Start over? This will erase all saved progress.':'بداية جديدة؟ سيتم مسح كل التقدّم المحفوظ.';
+  customConfirm(msg,()=>{
+    clearState();
+    const keepLang=state.lang;
+    state=defaultState();state.lang=keepLang;
+    gameStarted=false;
+    document.getElementById('winScreen').classList.remove('show');
+    document.getElementById('gameArea').classList.add('hidden');
+    document.getElementById('startScreen').classList.remove('hidden');
+    document.getElementById('newStartBtn').classList.add('hidden');
+    document.getElementById('playerPill').classList.add('hidden');
+    document.getElementById('nameInput').value='';
+    document.querySelectorAll('.avatar').forEach(x=>x.classList.remove('sel'));
+    document.querySelector('.avatar').classList.add('sel');
+    document.querySelectorAll('.station').forEach(s=>s.classList.remove('done'));
+    document.querySelector('.station[data-st="2"]').classList.add('locked');
+    document.querySelector('.station[data-st="3"]').classList.add('locked');
+    document.querySelector('.station[data-st="4"]').classList.add('locked');
+    document.getElementById('nextBtn1').classList.remove('show');
+    document.getElementById('nextBtn2').classList.remove('show');
+    document.getElementById('nextBtn3').classList.remove('show');
+    document.getElementById('nextBtn4').classList.remove('show');
+    document.getElementById('fb1').className='feedback';
+    document.getElementById('fb2').className='feedback';
+    document.getElementById('fb3').className='feedback';
+    document.getElementById('fb4').className='feedback';
+    applyLang();updateEnergy();
+  });
+};
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function go(n){
+  if(!state.unlocked[n])return;
+  state.currentStation=n;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  document.getElementById('winScreen').classList.remove('show');
+  document.getElementById('p'+n).classList.add('show');
+  document.querySelectorAll('.station').forEach(s=>s.classList.toggle('active',s.dataset.st==n));
+  if(n===1){renderStationGate();if(!state.done[1]&&!state.s1.triedLenses.length)say('gateIntro');}
+  if(n===2)renderStation2();
+  if(n===3){renderStationMsg();if(!state.done[3]&&!state.s3.installed.length)say('msgIntro','sad');}
+  if(n===4){renderStation4();if(!state.done[4]&&state.s4.stepIdx===0)say('bayIntro','sad');}
+  saveState();
+}
+function unlock(n){state.unlocked[n]=true;document.querySelector('.station[data-st="'+n+'"]').classList.remove('locked');}
+function goToWin(){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));document.getElementById('winScreen').classList.add('show');saveState();}
+function updateEnergy(){
+  const c=Object.values(state.done).filter(Boolean).length;const pct=Math.round(c/4*100);
+  document.getElementById('energyBar').style.width=pct+'%';document.getElementById('energyPct').textContent=pct;
+}
+function markDone(n,sayKey){
+  state.done[n]=true;
+  document.querySelector('.station[data-st="'+n+'"]').classList.add('done');
+  updateEnergy();
+  say(sayKey,'happy');
+  if(n<4)unlock(n+1);
+  const nb=document.getElementById('nextBtn'+n);if(nb)nb.classList.add('show');
+  if(state.done[1]&&state.done[2]&&state.done[3]&&state.done[4]){
+    document.getElementById('winTitle').textContent=state.lang==='en'?('Society module online, '+state.name+'!'):('وحدة المجتمع جاهزة يا '+state.name+'!');
+  }
+  saveState();
+}
+function redoStation(n){
+  const msg=state.lang==='en'?'Rebuild this station from the start? Your other progress stays safe.':'إعادة بناء هذه المحطة من البداية؟ تقدّمك في المحطات الأخرى سيبقى محفوظاً.';
+  customConfirm(msg,()=>{
+    const fresh=defaultState();
+    if(n===1){
+      state.s1=fresh.s1;state.done[1]=false;
+      document.querySelector('.station[data-st="1"]').classList.remove('done');
+      document.getElementById('nextBtn1').classList.remove('show');
+      document.getElementById('fb1').className='feedback';document.getElementById('fb1').textContent='';
+    }else if(n===2){
+      state.s2=fresh.s2;state.done[2]=false;
+      document.querySelector('.station[data-st="2"]').classList.remove('done');
+      document.getElementById('nextBtn2').classList.remove('show');
+      document.getElementById('fb2').className='feedback';document.getElementById('fb2').textContent='';
+    }else if(n===3){
+      state.s3=fresh.s3;state.done[3]=false;
+      document.querySelector('.station[data-st="3"]').classList.remove('done');
+      document.getElementById('nextBtn3').classList.remove('show');
+      document.getElementById('fb3').className='feedback';document.getElementById('fb3').textContent='';
+    }else{
+      state.s4=fresh.s4;state.done[4]=false;
+      document.querySelector('.station[data-st="4"]').classList.remove('done');
+      document.getElementById('nextBtn4').classList.remove('show');
+      document.getElementById('fb4').className='feedback';document.getElementById('fb4').textContent='';
+    }
+    updateEnergy();
+    say('redo');
+    go(n);
+  });
+}
+let confirmCallback=null;
+function customConfirm(msg,onYes){
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmOverlay').classList.add('show');
+  confirmCallback=onYes;
+}
+document.getElementById('confirmYesBtn').onclick=()=>{
+  document.getElementById('confirmOverlay').classList.remove('show');
+  const cb=confirmCallback;confirmCallback=null;
+  if(cb)cb();
+};
+document.getElementById('confirmNoBtn').onclick=()=>{
+  document.getElementById('confirmOverlay').classList.remove('show');
+  confirmCallback=null;
+};
+function shakePill(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');}
+function shuffleArray(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+/* =========================================================
+   DRAG AND DROP ENGINE (mouse + touch)
+   ========================================================= */
+let dragCtx=null;
+function makeDraggable(el,payload,onDrop){
+  el.classList.add('draggable');
+  el.addEventListener('pointerdown',ev=>{
+    if(el.disabled)return;
+    if(ev.button!==undefined&&ev.button!==0)return;
+    beginDrag(ev,el,payload,onDrop);
+  });
+}
+function beginDrag(ev,el,payload,onDrop){
+  const rect=el.getBoundingClientRect();
+  const ghost=el.cloneNode(true);
+  ghost.classList.add('drag-ghost');ghost.classList.remove('draggable');
+  ghost.style.width=rect.width+'px';
+  ghost.style.left=ev.clientX+'px';ghost.style.top=ev.clientY+'px';
+  dragCtx={el,ghost,payload,onDrop,startX:ev.clientX,startY:ev.clientY,moved:false,zone:null,live:false};
+  const move=e=>{
+    if(!dragCtx)return;
+    const dx=e.clientX-dragCtx.startX,dy=e.clientY-dragCtx.startY;
+    if(!dragCtx.moved&&Math.hypot(dx,dy)<9)return;
+    if(!dragCtx.moved){
+      dragCtx.moved=true;dragCtx.live=true;
+      document.body.appendChild(ghost);
+      el.classList.add('dragging');
+    }
+    ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';
+    ghost.style.display='none';
+    const under=document.elementFromPoint(e.clientX,e.clientY);
+    ghost.style.display='';
+    const zone=under?under.closest('.dropzone'):null;
+    if(zone!==dragCtx.zone){
+      if(dragCtx.zone)dragCtx.zone.classList.remove('over');
+      if(zone)zone.classList.add('over');
+      dragCtx.zone=zone;
+    }
+  };
+  const up=e=>{
+    window.removeEventListener('pointermove',move);
+    window.removeEventListener('pointerup',up);
+    window.removeEventListener('pointercancel',up);
+    if(!dragCtx)return;
+    const ctx=dragCtx;dragCtx=null;
+    ctx.el.classList.remove('dragging');
+    if(ctx.zone)ctx.zone.classList.remove('over');
+    if(ctx.ghost.parentNode)ctx.ghost.parentNode.removeChild(ctx.ghost);
+    if(ctx.moved){
+      if(ctx.zone)ctx.onDrop(ctx.payload,ctx.zone);
+    }else{
+      ctx.onDrop(ctx.payload,null);
+    }
+  };
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',up);
+  window.addEventListener('pointercancel',up);
+}
+
+/* =========================================================
+   STATION 1 DATA : SMART GATE
+   ========================================================= */
+const gateShapes=['square','circle','triangle','square','circle','triangle'];
+const lenses=[
+  {id:'red',ico:'🔴',cls:'red',en:"Red lens: X-ray privacy scan",ar:"العدسة الحمراء: مسح خصوصية بالأشعة السينية",
+   meters:{speed:96,priv:8,sat:32},
+   fb:{en:"The line flies through, but the X-ray sees straight through everyone's bag and face. Speed does not excuse spying.",
+       ar:"الطابور يمر بسرعة هائلة، لكن الأشعة تخترق حقيبة ووجه كل طالب. السرعة لا تبرر التجسس."}},
+  {id:'blue',ico:'🔵',cls:'blue',en:"Blue lens: Shape filter",ar:"العدسة الزرقاء: فلتر الأشكال",
+   meters:{speed:72,priv:88,sat:14},
+   fb:{en:"The gate only trusts squares and throws every circle and triangle into a bin. That is bias, not intelligence.",
+       ar:"البوابة تثق بالمربعات فقط وترمي كل دائرة ومثلث في السلة. هذا تحيّز لا ذكاء."}},
+  {id:'green',ico:'🟢',cls:'green',en:"Green lens: Gentle barcode scan",ar:"العدسة الخضراء: مسح ضوئي لطيف (باركود)",
+   meters:{speed:58,priv:86,sat:92},
+   fb:{en:"A calm barcode check. Everyone moves at a fair pace, nothing private is exposed, and every shape is welcome.",
+       ar:"مسح باركود هادئ. الجميع يتحرك بوتيرة عادلة، لا شيء خاص يُكشف، وكل شكل مرحّب به."}}
+];
+const TG={
+  needBoth:{en:"Locked, try red and blue first",ar:"مقفلة، جرّب الأحمر والأزرق أولاً"},
+  allDone:{en:"You found it! Fast is not enough, and favouring one shape is not fair. Respecting privacy and welcoming everyone at once is real intelligence.",
+           ar:"وجدتها! السرعة وحدها لا تكفي، وتفضيل شكل واحد ليس عدلاً. احترام الخصوصية والترحيب بالجميع معاً هو الذكاء الحقيقي."}
+};
+
+/* ===== Station 1 rendering ===== */
+function gClamp(v){return Math.max(0,Math.min(100,Math.round(v)));}
+function renderQueue(lastLens){
+  const row=document.getElementById('queueRow');row.innerHTML='';
+  gateShapes.forEach(shape=>{
+    const d=document.createElement('div');
+    d.className='gperson shape-'+shape;
+    let face='🙂',badge='',reject=false;
+    if(lastLens==='red'){face='🙈';badge='😠';}
+    else if(lastLens==='blue'){
+      if(shape==='square'){face='😊';}
+      else{face='😟';badge='❓';reject=true;}
+    }else if(lastLens==='green'){face='😊';}
+    d.textContent=face;
+    if(reject)d.classList.add('reject');
+    if(badge){const b=document.createElement('span');b.className='gbadge';b.textContent=badge;d.appendChild(b);}
+    row.appendChild(d);
+  });
+}
+function renderGateMeters(m){
+  const map=[['speed','gSpeedF','gSpeedV'],['priv','gPrivF','gPrivV'],['sat','gSatF','gSatV']];
+  map.forEach(([k,fid,vid])=>{
+    const v=gClamp(m?m[k]:0);
+    document.getElementById(fid).style.width=v+'%';
+    document.getElementById(vid).textContent=v+'%';
+    document.getElementById(vid).style.color=v<40?'var(--bad)':v<70?'var(--yellow)':'var(--good)';
+  });
+}
+function renderStationGate(){
+  const s=state.s1;
+  renderQueue(s.lastLens);
+  renderGateMeters(s.lastLens?lenses.find(l=>l.id===s.lastLens).meters:null);
+  document.getElementById('eyeIco').textContent=s.lastLens?lenses.find(l=>l.id===s.lastLens).ico:'👁️';
+  document.getElementById('eyeSlot').classList.toggle('filled',!!s.lastLens);
+
+  const needBoth=s.triedLenses.indexOf('red')<0||s.triedLenses.indexOf('blue')<0;
+  const row=document.getElementById('lensRow');row.innerHTML='';
+  lenses.forEach(l=>{
+    const b=document.createElement('button');
+    b.className='lens-card '+l.cls;
+    if(s.triedLenses.indexOf(l.id)>-1)b.classList.add('tried');
+    const locked=l.id==='green'&&needBoth&&!state.done[1];
+    b.disabled=locked;
+    const lockHtml=locked?'<span class="lens-lock">🔒</span>':'';
+    b.innerHTML='<span class="lico">'+l.ico+'</span><span>'+l[state.lang]+'</span>'+lockHtml;
+    if(!b.disabled){
+      makeDraggable(b,l.id,(id,zone)=>{
+        if(zone===null||zone.dataset.zone==='eye')tryLens(id);
+      });
+    }else{
+      b.onclick=()=>{shakePill(b);say('gateLocked');};
+    }
+    row.appendChild(b);
+  });
+
+  renderPills1();saveState();
+}
+function tryLens(id){
+  const s=state.s1,l=lenses.find(x=>x.id===id),fb=document.getElementById('gateFb');
+  s.lastLens=id;
+  if(s.triedLenses.indexOf(id)<0)s.triedLenses.push(id);
+  fb.className=id==='green'?'sim-fb ok':'sim-fb no';
+  fb.textContent=l.fb[state.lang];
+  renderStationGate();
+  if(id==='green'){
+    setTimeout(()=>finishGate(),1500);
+  }
+}
+function finishGate(){
+  const fb=document.getElementById('fb1');fb.className='feedback ok';
+  fb.textContent=TG.allDone[state.lang];
+  markDone(1,'sGate');renderPills1();
+}
+function renderPills1(){
+  const wrap=document.getElementById('pills1');if(!wrap)return;wrap.innerHTML='';
+  const s=state.s1;
+  lenses.forEach((l,i)=>{
+    const b=document.createElement('button');b.className='step-pill';b.textContent=i+1;
+    const tried=s.triedLenses.indexOf(l.id)>-1;
+    const reached=tried||i===0||s.triedLenses.length>=i;
+    if(reached)b.classList.add('reached');
+    if(tried)b.classList.add('pdone');
+    if(l.id===s.lastLens&&!state.done[1])b.classList.add('current');
+    b.onclick=()=>{
+      if(!reached){shakePill(b);say('locked');return;}
+      tryLens(l.id);
+    };
+    wrap.appendChild(b);
+  });
+}
+
+/* =========================================================
+   STATION 2 DATA : IMPACT SIMULATOR
+   ========================================================= */
+const cases=[
+  {
+    plan:{en:"My friend! I built a plan to organise the school library! I will run face recognition cameras and read the students' messages so I know exactly when they will return the books. Efficiency will be 100%!",
+          ar:"يا صديقي! لقد طوّرت خطة لتنظيم مكتبة المدرسة! سأشغّل كاميرات للتعرّف على الوجوه وأقرأ رسائل الطلاب لأعرف بالضبط متى سيعيدون الكتب! الكفاءة ستكون 100%!"},
+    start:{eff:100,fair:35,priv:5},
+    news:{en:"Disaster! Students are boycotting the robot because it spies on them!",ar:"كارثة! الطلاب يقاطعون الروبوت لأنه يتجسس عليهم!"},
+    fixes:[
+      {good:1,ico:"💳",en:"Use library cards instead of face cameras",ar:"استخدام بطاقات المكتبة بدل الكاميرات",d:{eff:-8,fair:12,priv:38},
+       why:{en:"A card proves who borrowed the book without watching anyone's face.",ar:"البطاقة تُثبت مَن استعار الكتاب دون مراقبة وجه أحد."}},
+      {good:1,ico:"🔔",en:"Send a general reminder instead of reading private messages",ar:"إرسال تذكير عام بدل قراءة الرسائل الخاصة",d:{eff:-5,fair:10,priv:35},
+       why:{en:"A simple reminder does the same job without opening anyone's private chat.",ar:"التذكير البسيط يؤدي المهمة نفسها دون فتح محادثات أحد."}},
+      {good:1,ico:"🙋",en:"Let any student ask a human librarian to review the decision",ar:"السماح لأي طالب بمراجعة القرار مع أمين مكتبة إنسان",d:{eff:-4,fair:32,priv:4},
+       why:{en:"A human review protects students when the robot is wrong.",ar:"المراجعة البشرية تحمي الطلاب عندما يخطئ الروبوت."}},
+      {good:0,ico:"📸",en:"Add even more cameras with higher resolution",ar:"إضافة كاميرات أكثر بدقة أعلى",d:{eff:4,fair:-8,priv:-15},
+       why:{en:"More cameras means more watching, not more fairness.",ar:"كاميرات أكثر تعني مراقبة أكثر، لا عدالة أكثر."}},
+      {good:0,ico:"📋",en:"Post the names of late students on the school board",ar:"نشر أسماء الطلاب المتأخرين على لوحة المدرسة",d:{eff:2,fair:-20,priv:-18},
+       why:{en:"Shaming students in public is neither private nor fair.",ar:"التشهير بالطلاب علناً ليس خصوصية ولا عدالة."}}
+    ]
+  },
+  {
+    plan:{en:"New plan! I will rank every student by last year's grades, and give the highest scorers more time in the science lab. The lab will never be crowded again!",
+          ar:"خطة جديدة! سأرتّب كل طالب حسب درجات العام الماضي، وأمنح الأعلى درجات وقتاً أطول في مختبر العلوم. لن يزدحم المختبر مرة أخرى!"},
+    start:{eff:100,fair:10,priv:55},
+    news:{en:"Anger at school! The robot locks half the students out of the lab!",ar:"غضب في المدرسة! الروبوت يمنع نصف الطلاب من دخول المختبر!"},
+    fixes:[
+      {good:1,ico:"⚖️",en:"Share lab time equally, with extra help for students who need it",ar:"توزيع وقت المختبر بالتساوي مع دعم إضافي لمن يحتاج",d:{eff:-6,fair:45,priv:0},
+       why:{en:"Equal access lets every student learn, not only the ones already ahead.",ar:"الوصول المتساوي يتيح لكل طالب أن يتعلّم، لا للمتقدّمين فقط."}},
+      {good:1,ico:"💬",en:"Explain in clear words why each schedule was chosen",ar:"شرح سبب كل جدول بكلمات واضحة",d:{eff:-3,fair:22,priv:2},
+       why:{en:"When a decision can be explained, students can question it.",ar:"عندما يمكن تفسير القرار، يستطيع الطلاب مناقشته."}},
+      {good:1,ico:"🧑‍🏫",en:"Let a human teacher change the schedule when it is unfair",ar:"السماح لمعلم إنسان بتعديل الجدول عندما يكون غير عادل",d:{eff:-5,fair:26,priv:0},
+       why:{en:"Humans must stay in charge of decisions about people.",ar:"يجب أن يبقى الإنسان مسؤولاً عن القرارات المتعلقة بالناس."}},
+      {good:0,ico:"📊",en:"Trust the old grades completely, numbers never lie",ar:"الثقة الكاملة بالدرجات القديمة، فالأرقام لا تكذب",d:{eff:3,fair:-25,priv:0},
+       why:{en:"Old grades repeat old gaps. Numbers can carry unfairness too.",ar:"الدرجات القديمة تكرّر الفجوات القديمة. الأرقام قد تحمل ظلماً أيضاً."}},
+      {good:0,ico:"🤐",en:"Keep the ranking method secret so nobody argues",ar:"إخفاء طريقة الترتيب حتى لا يعترض أحد",d:{eff:3,fair:-22,priv:-6},
+       why:{en:"A secret decision cannot be checked or corrected.",ar:"القرار السرّي لا يمكن فحصه ولا تصحيحه."}}
+    ]
+  },
+  {
+    plan:{en:"Best idea yet! I will track the exact location of every student, 24 hours a day, so I always know when the school bus should arrive. Nobody will ever wait again!",
+          ar:"أفضل فكرة حتى الآن! سأتتبّع الموقع الدقيق لكل طالب، 24 ساعة في اليوم، لأعرف دائماً متى يجب أن يصل باص المدرسة. لن ينتظر أحد بعد اليوم!"},
+    start:{eff:100,fair:45,priv:3},
+    news:{en:"Parents are furious! The robot follows children everywhere, even at home!",ar:"غضب الأهالي! الروبوت يتعقّب الأطفال في كل مكان، حتى في بيوتهم!"},
+    fixes:[
+      {good:1,ico:"🚌",en:"Track the bus itself, not the students",ar:"تتبّع الباص نفسه، لا الطلاب",d:{eff:-4,fair:10,priv:42},
+       why:{en:"The bus location answers the question. Children's locations are not needed.",ar:"موقع الباص يجيب عن السؤال. مواقع الأطفال غير لازمة."}},
+      {good:1,ico:"⏱️",en:"Turn tracking on only during the trip, then switch it off",ar:"تشغيل التتبّع أثناء الرحلة فقط ثم إيقافه",d:{eff:-3,fair:6,priv:28},
+       why:{en:"Collect data only for as long as you truly need it.",ar:"اجمع البيانات فقط للمدة التي تحتاجها فعلاً."}},
+      {good:1,ico:"✍️",en:"Ask families for permission before collecting any data",ar:"أخذ موافقة الأهل قبل جمع أي بيانات",d:{eff:-4,fair:28,priv:20},
+       why:{en:"People have the right to say yes or no to their own data.",ar:"للناس الحق في الموافقة أو الرفض بشأن بياناتهم."}},
+      {good:0,ico:"🗄️",en:"Store every location forever, just in case",ar:"حفظ كل المواقع للأبد، تحسّباً فقط",d:{eff:1,fair:-10,priv:-24},
+       why:{en:"Data kept forever can leak or be misused later.",ar:"البيانات المحفوظة للأبد قد تتسرّب أو يُساء استخدامها لاحقاً."}},
+      {good:0,ico:"📤",en:"Share the locations with other apps to make them smarter",ar:"مشاركة المواقع مع تطبيقات أخرى لجعلها أذكى",d:{eff:2,fair:-12,priv:-28},
+       why:{en:"Data given for one purpose should not travel to another.",ar:"البيانات المُعطاة لغرض واحد يجب ألّا تنتقل لغرض آخر."}}
+    ]
+  }
+];
+const T1={
+  runHint:{en:"Watch the three meters carefully.",ar:"راقب المؤشرات الثلاثة بعناية."},
+  installed:{en:"✓ Installed. The balance is improving.",ar:"✓ تم التركيب. التوازن يتحسّن."},
+  rejectedMsg:{en:"✗ That would make things worse.",ar:"✗ هذا سيزيد الأمر سوءاً."},
+  caseDone:{en:"Balanced! Efficiency is a little lower, but fairness and privacy are protected. That is a decision society can accept.",ar:"تحقّق التوازن! الكفاءة أقل قليلاً، لكن العدالة والخصوصية محميّتان. هذا قرار يمكن للمجتمع قبوله."},
+  allDone:{en:"Excellent work! Your robot now tests every plan against efficiency, fairness and privacy before acting.",ar:"عمل ممتاز! صار روبوتك يختبر كل خطة أمام الكفاءة والعدالة والخصوصية قبل التنفيذ."}
+};
+
+/* ===== Station 2 rendering ===== */
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)));}
+function setMeters(m,animateCrash){
+  const map=[['eff','fEff','vEff','mEff'],['fair','fFair','vFair','mFair'],['priv','fPriv','vPriv','mPriv']];
+  map.forEach(([k,fid,vid,mid])=>{
+    const v=clamp(m[k]);
+    document.getElementById(fid).style.width=v+'%';
+    document.getElementById(vid).textContent=v+'%';
+    document.getElementById(vid).style.color=v<40?'var(--bad)':v<70?'var(--yellow)':'var(--good)';
+    if(animateCrash&&v<40){const el=document.getElementById(mid);el.classList.remove('crashing');void el.offsetWidth;el.classList.add('crashing');}
+  });
+}
+function renderStation2(){
+  const s=state.s2;
+  if(s.caseIdx>s.maxCase)s.maxCase=s.caseIdx;
+  const c=cases[Math.min(s.caseIdx,cases.length-1)];
+  document.getElementById('planText').textContent=c.plan[state.lang];
+  document.getElementById('simFb').textContent='';document.getElementById('simFb').className='sim-fb';
+
+  const runW=document.getElementById('runWrap'),newsW=document.getElementById('newsWrap'),fixW=document.getElementById('fixWrap');
+  if(s.phase==='plan'){
+    runW.style.display='block';newsW.style.display='none';fixW.style.display='none';
+    document.getElementById('planFace').textContent='🤖';
+    setMeters({eff:0,fair:0,priv:0});
+    document.getElementById('runBtn').disabled=false;
+  }else if(s.phase==='crash'){
+    runW.style.display='none';newsW.style.display='block';fixW.style.display='none';
+    document.getElementById('planFace').textContent='😟';
+    document.getElementById('newsText').textContent=c.news[state.lang];
+    setMeters(s.meters,true);
+  }else{
+    runW.style.display='none';newsW.style.display='none';fixW.style.display='block';
+    document.getElementById('planFace').textContent=s.phase==='celebrate'?'🤩':'😟';
+    setMeters(s.meters);
+    renderFixes(c);
+  }
+  renderPills2();saveState();
+}
+function ensureFixOrder(s,c){
+  if(!s.fixOrder||s.fixOrder.length!==c.fixes.length){
+    s.fixOrder=shuffleArray(c.fixes.map((_,i)=>i));
+  }
+}
+function renderFixes(c){
+  const s=state.s2,grid=document.getElementById('fixGrid');grid.innerHTML='';
+  const goodTotal=c.fixes.filter(x=>x.good===1).length;
+  ensureFixOrder(s,c);
+
+  const hint=document.getElementById('dzHint');
+  if(hint){
+    hint.textContent=state.lang==='en'
+      ? ("The robot's decision  ("+s.installed.length+" / "+goodTotal+" changes installed)")
+      : ("قرار الروبوت  ("+s.installed.length+" / "+goodTotal+" تعديلات مركّبة)");
+    const chips=document.getElementById('dzChips');chips.innerHTML='';
+    s.installed.forEach(idx=>{
+      const sp=document.createElement('span');sp.className='dzChip';
+      sp.textContent=c.fixes[idx].ico+' '+c.fixes[idx][state.lang];
+      chips.appendChild(sp);
+    });
+  }
+
+  s.fixOrder.forEach(i=>{
+    const f=c.fixes[i];
+    const b=document.createElement('button');
+    b.className='fix-card';
+    const inst=s.installed.indexOf(i)>-1,rej=s.rejected.indexOf(i)>-1;
+    if(inst)b.classList.add('installed');
+    if(rej)b.classList.add('rejected');
+    b.disabled=inst||rej||s.phase==='celebrate';
+    b.innerHTML='<span class="fico">'+(inst?'✅':rej?'🚫':f.ico)+'</span><span>'+f[state.lang]+'</span>';
+    if(!b.disabled)makeDraggable(b,i,(idx,zone)=>{
+      if(zone===null||zone.dataset.zone==='decision')applyFix(idx);
+    });
+    grid.appendChild(b);
+  });
+}
+function runSimulation(){
+  const s=state.s2,c=cases[s.caseIdx];
+  document.getElementById('runBtn').disabled=true;
+  const fb=document.getElementById('simFb');fb.className='sim-fb';fb.textContent=T1.runHint[state.lang];
+  setMeters({eff:c.start.eff,fair:80,priv:80});
+  setTimeout(()=>{
+    s.meters={eff:c.start.eff,fair:c.start.fair,priv:c.start.priv};
+    s.phase='crash';
+    renderStation2();
+    say('crash','sad');
+  },1400);
+}
+function openFixes(){
+  const s=state.s2,c=cases[s.caseIdx];
+  s.phase='fix';
+  s.fixOrder=shuffleArray(c.fixes.map((_,i)=>i));
+  renderStation2();
+  say('fixing');
+}
+function applyFix(i){
+  const s=state.s2,c=cases[s.caseIdx],f=c.fixes[i],fb=document.getElementById('simFb');
+  if(f.good===1){
+    s.installed.push(i);
+    s.meters={eff:clamp(s.meters.eff+f.d.eff),fair:clamp(s.meters.fair+f.d.fair),priv:clamp(s.meters.priv+f.d.priv)};
+    fb.className='sim-fb ok';fb.textContent=T1.installed[state.lang]+' '+f.why[state.lang];
+  }else{
+    s.rejected.push(i);
+    fb.className='sim-fb no';fb.textContent=T1.rejectedMsg[state.lang]+' '+f.why[state.lang];
+  }
+  setMeters(s.meters);renderFixes(c);saveState();
+  const goodTotal=c.fixes.filter(x=>x.good===1).length;
+  if(s.installed.length>=goodTotal){
+    s.phase='celebrate';
+    setTimeout(()=>{
+      renderFixes(c);
+      document.getElementById('planFace').textContent='🤩';
+      fb.className='sim-fb ok';fb.textContent=T1.caseDone[state.lang];
+      say('fixing','happy');
+      setTimeout(()=>{
+        if(s.caseIdx+1>=cases.length){finishS2();}
+        else{s.caseIdx++;s.phase='plan';s.installed=[];s.rejected=[];s.meters={eff:0,fair:0,priv:0};s.fixOrder=[];renderStation2();say('planExcited');}
+      },2600);
+    },900);
+  }
+}
+function finishS2(){
+  const fb=document.getElementById('fb2');fb.className='feedback ok';
+  fb.textContent=T1.allDone[state.lang];
+  markDone(2,'sImpact');renderPills2();
+}
+function renderPills2(){
+  const wrap=document.getElementById('pills2');if(!wrap)return;wrap.innerHTML='';
+  const s=state.s2;
+  cases.forEach((c,i)=>{
+    const b=document.createElement('button');b.className='step-pill';b.textContent=i+1;
+    const reached=i<=s.maxCase;
+    if(reached)b.classList.add('reached');
+    if(i<s.maxCase||state.done[2])b.classList.add('pdone');
+    if(i===s.caseIdx&&!state.done[2])b.classList.add('current');
+    b.onclick=()=>{
+      if(!reached){shakePill(b);say('locked');return;}
+      s.caseIdx=i;s.phase='plan';s.installed=[];s.rejected=[];s.meters={eff:0,fair:0,priv:0};
+      renderStation2();say('planExcited');
+    };
+    wrap.appendChild(b);
+  });
+}
+
+/* =========================================================
+   STATION 3 DATA : MESSAGE DELIVERY
+   ========================================================= */
+const msgChars=[
+  {id:'blind',cueIco:'🕶️',need:'speaker',
+   label:{en:"Wears dark glasses",ar:"يرتدي نظارة سوداء"}},
+  {id:'lang',cueIco:'🔺',need:'translator',
+   label:{en:"Speaks with triangle-shaped bubbles",ar:"يتحدث بفقاعات مثلثة الشكل"}},
+  {id:'normal',cueIco:'',need:null,
+   label:{en:"An ordinary friend",ar:"صديق عادي"}}
+];
+const msgPartsData=[
+  {id:'speaker',ico:'🔊',en:"Sound speaker",ar:"مكبر صوت",
+   ok:{en:"The robot sends sound waves. Now the message reaches a friend who can't see it.",ar:"الروبوت يرسل موجات صوتية. الآن تصل الرسالة لصديق لا يستطيع رؤيتها."}},
+  {id:'translator',ico:'🧩',en:"Colored translator chip",ar:"شريحة مترجم ملونة",
+   ok:{en:"The bubble changes shape to match the friend's language. Now the message makes sense.",ar:"تتغيّر الفقاعة لتناسب لغة الصديق. الآن الرسالة مفهومة."}},
+  {id:'megaphone',ico:'📯',en:"Louder megaphone",ar:"مكبّر صوت أعلى فقط",distractor:true,
+   no:{en:"Louder is not the same as accessible. It still can't reach a friend who can't hear it, or translate for another.",ar:"الصوت الأعلى ليس هو إمكانية الوصول. لا يزال لا يصل لمن لا يسمعه ولا يترجم لغيره."}}
+];
+const TM={
+  allDone:{en:"Now the message reaches every friend, in the way each one of them can receive it. That is universal design.",
+            ar:"الآن تصل الرسالة لكل صديق، بالطريقة التي يستطيع كل منهم استقبالها بها. هذا هو التصميم الشامل."}
+};
+
+/* ===== Station 3 rendering ===== */
+function renderMsgChars(installed){
+  const row=document.getElementById('msgChars');row.innerHTML='';
+  msgChars.forEach(ch=>{
+    const d=document.createElement('div');
+    d.className='gperson shape-circle';
+    const success=!ch.need||installed.indexOf(ch.need)>-1;
+    d.textContent=success?'😊':'😟';
+    if(!success)d.classList.add('reject');
+    if(ch.cueIco){const c=document.createElement('span');c.className='gbadge';c.textContent=ch.cueIco;d.appendChild(c);}
+    const badge=document.createElement('span');badge.className='gbadge';badge.style.top='28px';badge.style.insetInlineEnd='-10px';badge.textContent=success?'✅':'❌';d.appendChild(badge);
+    row.appendChild(d);
+  });
+}
+function renderStationMsg(){
+  const s=state.s3;
+  renderMsgChars(s.installed);
+  const allGood=msgChars.every(ch=>!ch.need||s.installed.indexOf(ch.need)>-1);
+  document.getElementById('msgRobotFace').textContent=allGood?'🤩':(s.installed.length?'🤖':'😔');
+  document.getElementById('msgRobotSlot').classList.toggle('filled',s.installed.length>0);
+
+  const row=document.getElementById('msgParts');row.innerHTML='';
+  msgPartsData.forEach(p=>{
+    const used=!p.distractor&&s.installed.indexOf(p.id)>-1;
+    if(used)return;
+    const b=document.createElement('button');
+    b.className='lens-card green';
+    if(p.distractor&&s.triedDistractor)b.classList.add('tried');
+    b.innerHTML='<span class="lico">'+p.ico+'</span><span>'+p[state.lang]+'</span>';
+    makeDraggable(b,p.id,(id,zone)=>{
+      if(zone===null||zone.dataset.zone==='msgrobot')installPart(id);
+    });
+    row.appendChild(b);
+  });
+
+  renderPills3();saveState();
+}
+function installPart(id){
+  const s=state.s3,part=msgPartsData.find(x=>x.id===id),fb=document.getElementById('msgFb');
+  if(part.distractor){
+    s.triedDistractor=true;
+    fb.className='sim-fb no';fb.textContent=part.no[state.lang];
+    renderStationMsg();
+    return;
+  }
+  if(s.installed.indexOf(id)<0)s.installed.push(id);
+  fb.className='sim-fb ok';fb.textContent=part.ok[state.lang];
+  renderStationMsg();
+  if(s.installed.length>=2)setTimeout(finishMsg,1400);
+}
+function finishMsg(){
+  const fb=document.getElementById('fb3');fb.className='feedback ok';
+  fb.textContent=TM.allDone[state.lang];
+  markDone(3,'sMessage');renderPills3();
+}
+function renderPills3(){
+  const wrap=document.getElementById('pills3');if(!wrap)return;wrap.innerHTML='';
+  const s=state.s3;
+  const realParts=msgPartsData.filter(p=>!p.distractor);
+  realParts.forEach((p,i)=>{
+    const b=document.createElement('button');b.className='step-pill';b.textContent=i+1;
+    const reached=i<=s.installed.length;
+    if(reached)b.classList.add('reached');
+    if(i<s.installed.length)b.classList.add('pdone');
+    if(i===s.installed.length&&!state.done[3])b.classList.add('current');
+    b.onclick=()=>{
+      if(!reached){shakePill(b);say('locked');return;}
+      s.installed=s.installed.slice(0,i);
+      renderStationMsg();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+/* =========================================================
+   STATION 4 DATA : INCLUSIVE DESIGN STUDIO
+   ========================================================= */
+const parts=[
+  {id:'audio',ico:'🎧',en:'Voice processor',ar:'معالج الصوت'},
+  {id:'screen',ico:'🖥️',en:'Display screen',ar:'الشاشة'},
+  {id:'sound',ico:'🔊',en:'Sound output',ar:'مخرج الصوت'},
+  {id:'input',ico:'⌨️',en:'Input unit',ar:'وحدة الإدخال'}
+];
+const steps2=[
+  {part:'audio',ico:'🧑',
+   name:{en:"Your friend Kareem",ar:"صديقك كريم"},
+   need:{en:"He speaks a different local dialect. The robot did not understand a single word he said.",ar:"يتحدث بلهجة محلية مختلفة. لم يفهم الروبوت كلمة واحدة مما قاله."},
+   q:{en:"Which module do you plant into the robot's voice processor?",ar:"أي قطعة برمجية تزرعها في معالج الصوت للروبوت؟"},
+   win:{en:"Wonderful! Now I understand Kareem's dialect perfectly!",ar:"رائع! الآن أفهم لهجة كريم تماماً!"}},
+  {part:'screen',ico:'🧑‍🦯',
+   name:{en:"Your friend Lina",ar:"صديقتك لينا"},
+   need:{en:"She is blind. Everything the robot says appears only as text on a screen.",ar:"كفيفة. كل ما يقوله الروبوت يظهر كنصّ على الشاشة فقط."},
+   q:{en:"Which module do you plant into the robot's screen?",ar:"أي قطعة برمجية تزرعها في شاشة الروبوت؟"},
+   win:{en:"Excellent! Now I read everything out loud for Lina!",ar:"ممتاز! الآن أقرأ كل شيء بصوت عالٍ من أجل لينا!"}},
+  {part:'sound',ico:'🧏',
+   name:{en:"Your friend Omar",ar:"صديقك عمر"},
+   need:{en:"He is deaf. The robot answers with sound only, so he misses every reply.",ar:"أصمّ. الروبوت يجيب بالصوت فقط، فيفوته كل ردّ."},
+   q:{en:"Which module do you plant into the robot's sound output?",ar:"أي قطعة برمجية تزرعها في مخرج الصوت للروبوت؟"},
+   win:{en:"Great! Every word I speak now appears as live captions for Omar!",ar:"عظيم! كل كلمة أقولها تظهر الآن كتعليقات نصية مباشرة لعمر!"}},
+  {part:'input',ico:'🧑‍🦽',
+   name:{en:"Your friend Hana",ar:"صديقتك هناء"},
+   need:{en:"She cannot use speech to give commands, and the robot only listens for voice.",ar:"لا تستطيع استخدام الكلام لإعطاء الأوامر، والروبوت يستمع للصوت فقط."},
+   q:{en:"Which module do you plant into the robot's input unit?",ar:"أي قطعة برمجية تزرعها في وحدة الإدخال للروبوت؟"},
+   win:{en:"Perfect! Hana can type or tap symbols and I understand her fully!",ar:"مثالي! تستطيع هناء الكتابة أو الضغط على الرموز وأنا أفهمها تماماً!"}}
+];
+const modules=[
+  {id:'m1',fits:'audio',ico:'🗣️',en:"Local languages and dialects pack",ar:"حزمة اللغات واللهجات المحلية",
+   log:{en:"Understands many languages and local dialects",ar:"يفهم لغات ولهجات محلية متعددة"}},
+  {id:'m2',fits:'screen',ico:'🔉',en:"Screen reader that speaks everything aloud",ar:"القارئ الصوتي الذي ينطق كل شيء",
+   log:{en:"Reads its screen aloud for blind users",ar:"يقرأ شاشته بصوت عالٍ للمستخدمين المكفوفين"}},
+  {id:'m3',fits:'sound',ico:'💬',en:"Live captions for every spoken reply",ar:"تعليقات نصية مباشرة لكل ردّ منطوق",
+   log:{en:"Shows live captions for deaf users",ar:"يعرض تعليقات نصية مباشرة للمستخدمين الصمّ"}},
+  {id:'m4',fits:'input',ico:'⌨️',en:"Text and symbol input board",ar:"لوحة الإدخال بالنص والرموز",
+   log:{en:"Accepts text and symbols, not only speech",ar:"يقبل النص والرموز، لا الكلام فقط"}},
+  {id:'m5',fits:null,ico:'🚀',en:"Ultra-fast chip that runs only on the newest devices",ar:"شريحة فائقة السرعة تعمل على أحدث الأجهزة فقط",
+   no:{en:"That only serves friends who can afford new devices. It excludes more people, not fewer.",ar:"هذه تخدم فقط مَن يستطيع شراء أجهزة جديدة. إنها تُقصي أشخاصاً أكثر لا أقل."}},
+  {id:'m6',fits:null,ico:'🏫',en:"Training data collected from one school only",ar:"بيانات تدريب من مدرسة واحدة فقط",
+   no:{en:"One school cannot represent everyone. Narrow data creates a narrow robot.",ar:"مدرسة واحدة لا تمثّل الجميع. البيانات الضيّقة تصنع روبوتاً ضيّقاً."}}
+];
+const T2={
+  wrongPart:{en:"That module does not belong in this part. Read the friend's barrier again.",ar:"هذه القطعة لا تناسب هذا الجزء. اقرأ عائق الصديق مرة أخرى."},
+  allDone:{en:"Your robot is upgraded for everyone. Different people need different ways in, and you built all of them.",ar:"تمت ترقية روبوتك ليخدم الجميع. الناس المختلفون يحتاجون طرق وصول مختلفة، وأنت بنيتها كلها."}
+};
+
+/* ===== Station 4 rendering ===== */
+function renderStation4(){
+  const s=state.s4;
+  if(s.stepIdx>s.maxStep)s.maxStep=s.stepIdx;
+  const finished=s.stepIdx>=steps2.length;
+  document.getElementById('incFb').textContent='';document.getElementById('incFb').className='sim-fb';
+
+  const pl=document.getElementById('partsList');pl.innerHTML='';
+  parts.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='part';
+    if(i<s.stepIdx)d.classList.add('lit');
+    else if(!finished&&i===s.stepIdx){d.classList.add('target');d.classList.add('dropzone');}
+    d.dataset.zone='part';d.dataset.part=p.id;
+    d.innerHTML='<span>'+p.ico+'</span><span>'+p[state.lang]+'</span>';
+    pl.appendChild(d);
+  });
+  document.getElementById('robotBody').classList.toggle('upgraded',finished);
+  document.getElementById('rFace').textContent=finished?'🤖✨':(s.stepIdx===0?'😔':'🤖');
+
+  if(finished){
+    document.getElementById('personaCard').style.display='none';
+    document.getElementById('modWrap').style.display='none';
+    document.getElementById('upgradeWrap').style.display='block';
+    const ul=document.getElementById('upgradeLog');ul.innerHTML='';
+    s.log.forEach(id=>{
+      const m=modules.find(x=>x.id===id);if(!m)return;
+      const li=document.createElement('li');li.innerHTML='<span>'+m.ico+'</span><span>'+m.log[state.lang]+'</span>';ul.appendChild(li);
+    });
+  }else{
+    const st=steps2[s.stepIdx];
+    document.getElementById('personaCard').style.display='block';
+    document.getElementById('modWrap').style.display='block';
+    document.getElementById('upgradeWrap').style.display='none';
+    document.getElementById('pIco').textContent=st.ico;
+    document.getElementById('pName').textContent=st.name[state.lang];
+    document.getElementById('pNeed').textContent=st.need[state.lang];
+    document.getElementById('modQ').textContent=st.q[state.lang];
+    const wrap=document.getElementById('modules');wrap.innerHTML='';
+    const avail=modules.filter(m=>s.log.indexOf(m.id)<0).map(m=>m.id);
+    const sameOrder=s.modOrder&&s.modOrder.length===avail.length&&avail.every(id=>s.modOrder.indexOf(id)>-1);
+    if(!sameOrder)s.modOrder=shuffleArray(avail);
+    s.modOrder.forEach(id=>{
+      const m=modules.find(x=>x.id===id);
+      const b=document.createElement('button');b.className='module';
+      if(s.badPicks.indexOf(m.id)>-1)b.classList.add('bad-pick');
+      b.innerHTML='<span class="mmico">'+m.ico+'</span><span>'+m[state.lang]+'</span>';
+      makeDraggable(b,m.id,(id2,zone)=>{
+        if(zone===null){pickModule(id2);return;}
+        if(zone.dataset.zone==='part')pickModule(id2,zone.dataset.part);
+      });
+      wrap.appendChild(b);
+    });
+  }
+  renderPills4();saveState();
+}
+function pickModule(id,droppedOnPart){
+  const s=state.s4,st=steps2[s.stepIdx],m=modules.find(x=>x.id===id),fb=document.getElementById('incFb');
+  if(droppedOnPart&&droppedOnPart!==st.part){
+    fb.className='sim-fb no';
+    fb.textContent=state.lang==='en'
+      ? "That is not the part we are upgrading right now. Look at the glowing part."
+      : "هذا ليس الجزء الذي نرقّيه الآن. انظر إلى الجزء المضيء.";
+    return;
+  }
+  if(m.fits===st.part){
+    s.log.push(id);
+    s.badPicks=[];
+    fb.className='sim-fb ok';fb.textContent=st.win[state.lang];
+    document.getElementById('robotSay').textContent=st.win[state.lang];
+    const r=document.getElementById('robot');r.classList.remove('sad');r.classList.add('alive');setTimeout(()=>r.classList.remove('alive'),750);
+    s.stepIdx++;
+    setTimeout(()=>{
+      renderStation4();
+      if(s.stepIdx>=steps2.length)finishS4();
+    },1600);
+    saveState();
+  }else{
+    if(s.badPicks.indexOf(id)<0)s.badPicks.push(id);
+    fb.className='sim-fb no';
+    fb.textContent=m.fits?T2.wrongPart[state.lang]:m.no[state.lang];
+    renderStation4();
+  }
+}
+function finishS4(){
+  const fb=document.getElementById('fb4');fb.className='feedback ok';
+  fb.textContent=T2.allDone[state.lang];
+  markDone(4,'sInclusive');
+  say('bayFixed','happy');
+  renderPills4();
+}
+function renderPills4(){
+  const wrap=document.getElementById('pills4');if(!wrap)return;wrap.innerHTML='';
+  const s=state.s4;
+  steps2.forEach((st,i)=>{
+    const b=document.createElement('button');b.className='step-pill';b.textContent=(i+1);
+    const reached=i<=s.maxStep;
+    if(reached)b.classList.add('reached');
+    if(i<s.stepIdx)b.classList.add('pdone');
+    if(i===s.stepIdx&&!state.done[4])b.classList.add('current');
+    b.onclick=()=>{
+      if(!reached){shakePill(b);say('locked');return;}
+      s.stepIdx=i;s.log=s.log.slice(0,i);s.badPicks=[];
+      renderStation4();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+(function boot(){
+  if(loadState()){
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('gameArea').classList.remove('hidden');
+    document.querySelectorAll('.avatar').forEach(x=>x.classList.toggle('sel',x.dataset.av===state.avatar));
+    if(state.unlocked[2])document.querySelector('.station[data-st="2"]').classList.remove('locked');
+    if(state.unlocked[3])document.querySelector('.station[data-st="3"]').classList.remove('locked');
+    if(state.unlocked[4])document.querySelector('.station[data-st="4"]').classList.remove('locked');
+    if(state.done[1]){document.querySelector('.station[data-st="1"]').classList.add('done');document.getElementById('nextBtn1').classList.add('show');document.getElementById('fb1').className='feedback ok';document.getElementById('fb1').textContent=TG.allDone[state.lang];}
+    if(state.done[2]){document.querySelector('.station[data-st="2"]').classList.add('done');document.getElementById('nextBtn2').classList.add('show');document.getElementById('fb2').className='feedback ok';document.getElementById('fb2').textContent=T1.allDone[state.lang];}
+    if(state.done[3]){document.querySelector('.station[data-st="3"]').classList.add('done');document.getElementById('nextBtn3').classList.add('show');document.getElementById('fb3').className='feedback ok';document.getElementById('fb3').textContent=TM.allDone[state.lang];}
+    if(state.done[4]){document.querySelector('.station[data-st="4"]').classList.add('done');document.getElementById('nextBtn4').classList.add('show');document.getElementById('fb4').className='feedback ok';document.getElementById('fb4').textContent=T2.allDone[state.lang];}
+    updatePlayerPill();updateEnergy();
+    if(state.done[1]&&state.done[2]&&state.done[3]&&state.done[4]){
+      document.getElementById('winTitle').textContent=state.lang==='en'?('Society module online, '+state.name+'!'):('وحدة المجتمع جاهزة يا '+state.name+'!');
+      renderStationGate();renderStation2();renderStationMsg();renderStation4();refreshSay();
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+      document.getElementById('winScreen').classList.add('show');
+    }else{
+      go(state.currentStation||1);refreshSay();
+    }
+  }
+  applyLang();updateEnergy();
+})();
+</script>
+
+<div class="floatnav" id="floatNav">
+  <button class="fnav-btn fnav-back hidden" id="fnavBack">
+    <span class="fnav-ic">&#8249;</span>
+    <span class="fnav-lbl" data-en="Back" data-ar="السابق">Back</span>
+  </button>
+  <button class="fnav-btn fnav-next hidden" id="fnavNext">
+    <span class="fnav-ic">&#8250;</span>
+    <span class="fnav-lbl" data-en="Next" data-ar="التالي">Next</span>
+  </button>
+</div>
+
+<script>
+const FNAV_MIN=1, FNAV_MAX=4;
+function fnavCur(){const el=document.querySelector('.station.active');return el?+el.dataset.st:FNAV_MIN;}
+function updateFloatNav(){
+  const back=document.getElementById('fnavBack'), next=document.getElementById('fnavNext');
+  if(!back||!next)return;
+  const started=(typeof gameStarted!=='undefined')&&gameStarted;
+  const winEl=document.getElementById('winScreen');
+  const winShown=winEl&&winEl.classList.contains('show');
+  if(!started||winShown){back.classList.add('hidden');next.classList.add('hidden');return;}
+  back.classList.remove('hidden');next.classList.remove('hidden');
+  const cur=fnavCur();
+  back.disabled=cur<=FNAV_MIN;
+  next.disabled=cur>=FNAV_MAX||!(state.unlocked&&state.unlocked[cur+1]);
+}
+document.getElementById('fnavBack').onclick=()=>{const cur=fnavCur();if(cur>FNAV_MIN)go(cur-1);};
+document.getElementById('fnavNext').onclick=()=>{const cur=fnavCur();if(cur<FNAV_MAX)go(cur+1);};
+setInterval(updateFloatNav,400);
+</script>
+
+<script>
+/* injected: V4 layer */
+/* ============================================================
+   AI Worlds — V4 layer
+   Adds, without altering any existing mechanic:
+     (1) AIEDF competency provenance tooltips on every station tag
+     (2) P4 evidence capture + JSON export  (localStorage, no network)
+     (3) WCAG 2.1 AA remediation: ARIA, keyboard operability,
+         text alternatives for iconographic content, focus visibility
+   Deterministic, client-side, no external dependencies.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* ---------- 0. World identification ---------- */
+  var WORLD = (document.body.getAttribute('data-world') || '1');
+  var L = function () {
+    return (document.documentElement.lang === 'ar') ? 'ar' : 'en';
+  };
+
+  /* ============================================================
+     1. AIEDF COMPETENCY REGISTRY
+     Canonical name, domain, and definition for each of the ten
+     competencies. Definitions are the operative wording used in
+     this build; replace `def` strings with the verbatim text of
+     the source framework before publication.
+     ============================================================ */
+  var AIEDF = {
+    'FUND': {
+      en: { name: 'Fundamental AI Knowledge and Understanding',
+            domain: 'Domain 1 — Core Computational Concepts and Skills',
+            def: 'Recognise what artificial intelligence is and is not, distinguish AI-driven from deterministic systems, identify the major subfields, and describe how an intelligent system moves from input through processing to output.' },
+      ar: { name: 'المعرفة الأساسية بالذكاء الاصطناعي وفهمه',
+            domain: 'المجال 1 — المفاهيم والمهارات الحاسوبية الأساسية',
+            def: 'التعرّف على ماهية الذكاء الاصطناعي وما ليس منه، والتمييز بين الأنظمة القائمة على الذكاء الاصطناعي والأنظمة الحتمية، وتحديد مجالاته الفرعية الرئيسة، ووصف كيفية انتقال النظام الذكي من المدخلات إلى المعالجة إلى المخرجات.' }
+    },
+    'DATA': {
+      en: { name: 'AI Data Literacy',
+            domain: 'Domain 1 — Core Computational Concepts and Skills',
+            def: 'Interpret, evaluate and repair the data on which a model depends: locate anomalies, apply principled remediation rather than deletion, extrapolate from a trend, and detect distributional sampling bias.' },
+      ar: { name: 'الثقافة البياناتية للذكاء الاصطناعي',
+            domain: 'المجال 1 — المفاهيم والمهارات الحاسوبية الأساسية',
+            def: 'تفسير البيانات التي يعتمد عليها النموذج وتقييمها وإصلاحها: تحديد الشذوذ، وتطبيق معالجات مبدئية بدل الحذف، والاستقراء من الاتجاه العام، واكتشاف التحيّز في أخذ العيّنات.' }
+    },
+    'ALGO': {
+      en: { name: 'AI Algorithmic Design',
+            domain: 'Domain 1 — Core Computational Concepts and Skills',
+            def: 'Assemble a processing pipeline, select the features a model may use, and evaluate the result against held-out cases, distinguishing a genuine signal from a spuriously predictive one.' },
+      ar: { name: 'التصميم الخوارزمي للذكاء الاصطناعي',
+            domain: 'المجال 1 — المفاهيم والمهارات الحاسوبية الأساسية',
+            def: 'بناء سلسلة معالجة، واختيار السمات المتاحة للنموذج، وتقييم النتيجة على حالات مُحتجزة، والتمييز بين الإشارة الحقيقية والإشارة الزائفة.' }
+    },
+    'ETHIC': {
+      en: { name: 'AI Ethics',
+            domain: 'Domain 2 — Digital Citizenship and Ethical Competence',
+            def: 'Identify bias, privacy exposure, opacity and unaccountable automation in a deployed system, attribute each failure to the safeguard that did not hold, and specify the rule that would have prevented it.' },
+      ar: { name: 'أخلاقيات الذكاء الاصطناعي',
+            domain: 'المجال 2 — المواطنة الرقمية والكفاءة الأخلاقية',
+            def: 'تحديد التحيّز وانكشاف الخصوصية والغموض والأتمتة غير الخاضعة للمساءلة في نظام مُشغَّل، ونسب كل إخفاق إلى الضمانة التي لم تصمد، وتحديد القاعدة التي كانت ستمنعه.' }
+    },
+    'SAFE': {
+      en: { name: 'AI Safety and Risk Mitigation',
+            domain: 'Domain 2 — Digital Citizenship and Ethical Competence',
+            def: 'Recognise categories of AI-related risk as they arise in real interaction, classify them, and weigh severity against likelihood in deciding a response.' },
+      ar: { name: 'أمان الذكاء الاصطناعي وإدارة المخاطر',
+            domain: 'المجال 2 — المواطنة الرقمية والكفاءة الأخلاقية',
+            def: 'التعرّف على أصناف مخاطر الذكاء الاصطناعي كما تظهر في التفاعل الحقيقي، وتصنيفها، وموازنة الشدّة مقابل الاحتمالية عند تحديد الاستجابة.' }
+    },
+    'SOC': {
+      en: { name: 'AI Societal Evaluation',
+            domain: 'Domain 3 — Impact of Computing on Society',
+            def: 'Evaluate an automated policy against competing societal criteria — efficiency, privacy, equity and public acceptance — recognising that no available option maximises all of them jointly.' },
+      ar: { name: 'التقييم المجتمعي للذكاء الاصطناعي',
+            domain: 'المجال 3 — أثر الحوسبة في المجتمع',
+            def: 'تقييم سياسة مؤتمتة في ضوء معايير مجتمعية متنافسة — الكفاءة والخصوصية والإنصاف والقبول العام — مع إدراك أن لا خيار متاح يحقّقها جميعاً معاً.' }
+    },
+    'INCL': {
+      en: { name: 'Inclusive AI Design',
+            domain: 'Domain 3 — Impact of Computing on Society',
+            def: 'Locate the access barrier a system produces, distinguish amplification from genuine accessibility, and map each barrier onto the architectural subsystem responsible for it.' },
+      ar: { name: 'التصميم الشامل للذكاء الاصطناعي',
+            domain: 'المجال 3 — أثر الحوسبة في المجتمع',
+            def: 'تحديد حاجز الوصول الذي ينتجه النظام، والتمييز بين التضخيم وإتاحة الوصول الحقيقية، وربط كل حاجز بالنظام الفرعي المعماري المسؤول عنه.' }
+    },
+    'APPL': {
+      en: { name: 'Applied AI Development',
+            domain: 'Domain 4 — Digital Competence and Lifelong Learning',
+            def: 'Traverse the machine-learning lifecycle end to end, diagnose underfitting and train–test generalisation gaps, and demonstrate a classifier\u2019s adequacy by held-out outcome rather than assertion.' },
+      ar: { name: 'التطوير التطبيقي للذكاء الاصطناعي',
+            domain: 'المجال 4 — الكفاءة الرقمية والتعلّم مدى الحياة',
+            def: 'اجتياز دورة حياة تعلّم الآلة كاملة، وتشخيص نقص المطابقة وفجوة التعميم بين التدريب والاختبار، وإثبات كفاية المصنّف بنتيجة مُحتجزة لا بادّعاء.' }
+    },
+    'CREA': {
+      en: { name: 'AI-Driven Creativity',
+            domain: 'Domain 4 — Digital Competence and Lifelong Learning',
+            def: 'Compose a specification for a generative system, evaluate the artefact it returns, locate defects a well-formed specification does not prevent, and refine accordingly.' },
+      ar: { name: 'الإبداع المدفوع بالذكاء الاصطناعي',
+            domain: 'المجال 4 — الكفاءة الرقمية والتعلّم مدى الحياة',
+            def: 'صياغة مواصفة لنظام توليدي، وتقييم المُخرَج الذي يعيده، وتحديد العيوب التي لا تمنعها المواصفة الجيدة، ثم التحسين تبعاً لذلك.' }
+    },
+    'XDIS': {
+      en: { name: 'Cross-Disciplinary AI Integration',
+            domain: 'Domain 4 — Digital Competence and Lifelong Learning',
+            def: 'Translate a non-technical stakeholder\u2019s need into a scoped objective, distinguish genuine safeguards from covert data collection, and resolve an interpretability–accuracy trade-off in favour of practitioner comprehension.' },
+      ar: { name: 'التكامل متعدد التخصصات للذكاء الاصطناعي',
+            domain: 'المجال 4 — الكفاءة الرقمية والتعلّم مدى الحياة',
+            def: 'ترجمة حاجة صاحب مصلحة غير تقني إلى هدف محدّد النطاق، والتمييز بين الضمانات الحقيقية وجمع البيانات الخفي، وحسم المفاضلة بين القابلية للتفسير والدقة لصالح فهم الممارس.' }
+    }
+  };
+
+  var UI = {
+    en: { domain: 'Domain', bloom: 'Cognitive levels realised here', src: 'Source: AIEDF competency framework',
+          close: 'Close', info: 'About this competency',
+          evTitle: 'Learning evidence', evExport: 'Export evidence (JSON)',
+          evClear: 'Clear evidence', evCount: 'events recorded',
+          evNote: 'Stored on this device only. Nothing is sent anywhere.',
+          skip: 'Skip to main content' },
+    ar: { domain: 'المجال', bloom: 'المستويات المعرفية المتحقّقة هنا', src: 'المصدر: إطار كفايات AIEDF',
+          close: 'إغلاق', info: 'عن هذه الكفاية',
+          evTitle: 'أدلّة التعلّم', evExport: 'تصدير الأدلّة (JSON)',
+          evClear: 'مسح الأدلّة', evCount: 'حدثاً مسجّلاً',
+          evNote: 'محفوظة على هذا الجهاز فقط. لا يُرسل أي شيء إلى أي جهة.',
+          skip: 'انتقل إلى المحتوى الرئيسي' }
+  };
+  var T = function (k) { return UI[L()][k]; };
+
+  /* ============================================================
+     2. EVIDENCE LAYER  (satisfies P4 capture; §6.4 remedy)
+     ============================================================ */
+  var EV_KEY = 'aiworlds_evidence_w' + WORLD;
+  var Evidence = {
+    buf: [],
+    session: null,
+    enabled: true,
+
+    init: function () {
+      try {
+        var raw = localStorage.getItem(EV_KEY);
+        this.buf = raw ? JSON.parse(raw) : [];
+      } catch (e) { this.buf = []; }
+      this.session = 's' + Date.now().toString(36);
+    },
+
+    log: function (station, phase, evt, payload) {
+      if (!this.enabled) return;
+      this.buf.push({
+        t: Date.now(),
+        session: this.session,
+        world: Number(WORLD),
+        station: (station === undefined || station === null) ? null : station,
+        phase: (phase === undefined || phase === null) ? null : phase,
+        event: evt,
+        data: payload || {}
+      });
+      if (this.buf.length > 4000) this.buf.splice(0, this.buf.length - 4000);
+      this.flush();
+      this.paintCount();
+    },
+
+    flush: function () {
+      try { localStorage.setItem(EV_KEY, JSON.stringify(this.buf)); } catch (e) {}
+    },
+
+    clear: function () {
+      this.buf = [];
+      this.flush();
+      this.paintCount();
+    },
+
+    exportJSON: function () {
+      var out = {
+        artefact: 'AI Worlds',
+        build: 'V4',
+        world: Number(WORLD),
+        exported: new Date().toISOString(),
+        schema: {
+          t: 'epoch ms', session: 'session id', world: 'world index',
+          station: 'station index within world', phase: 'phase index within station',
+          event: 'event type', data: 'event-specific observable state change'
+        },
+        events: this.buf
+      };
+      var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'aiworlds_w' + WORLD + '_evidence.json';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    },
+
+    paintCount: function () {
+      var el = document.getElementById('evCount');
+      if (el) el.textContent = String(this.buf.length);
+    }
+  };
+  Evidence.init();
+  window.AIWorldsEvidence = Evidence;
+
+  /* --- wrap existing global functions to emit evidence --- */
+  function wrap(name, after) {
+    if (typeof window[name] !== 'function') return false;
+    var orig = window[name];
+    window[name] = function () {
+      var r = orig.apply(this, arguments);
+      try { after.apply(null, arguments); } catch (e) {}
+      return r;
+    };
+    return true;
+  }
+
+  function currentStation() {
+    try { return (typeof curStation !== 'undefined') ? curStation : null; } catch (e) { return null; }
+  }
+
+  function installEvidenceHooks() {
+    wrap('go', function (n) { Evidence.log(n, null, 'station_enter', {}); });
+    wrap('markDone', function (n) { Evidence.log(n, null, 'station_complete', {}); });
+    wrap('replayStation', function (n) { Evidence.log(n, null, 'station_replay', {}); });
+    ['goS0Phase', 'goS1Phase', 'goS2Phase', 'goS3Phase', 'goS4Phase', 'goS5Phase', 'goPhase']
+      .forEach(function (fn, i) {
+        wrap(fn, function (p) { Evidence.log(currentStation(), p, 'phase_enter', { fn: fn }); });
+      });
+
+    /* Secret Workshop / Model Lab — the P4 exemplar named in the paper:
+       the sequence of lens configurations with resulting accuracies. */
+    wrap('toggleFilter', function (k) {
+      var on = [];
+      try { on = (typeof activeFilters === 'function') ? activeFilters() : []; } catch (e) {}
+      Evidence.log(currentStation(), null, 'feature_toggle', { feature: k, activeAfter: on });
+    });
+    wrap('runFilterTest', function () {
+      var on = [], tr = null, te = null;
+      try { on = (typeof activeFilters === 'function') ? activeFilters() : []; } catch (e) {}
+      try { tr = (typeof trainScore === 'function') ? trainScore() : null; } catch (e) {}
+      try { te = (typeof testScore === 'function') ? testScore() : null; } catch (e) {}
+      Evidence.log(currentStation(), null, 'model_test', {
+        lensCombination: on, trainAccuracy: tr, testAccuracy: te
+      });
+    });
+    wrap('train', function () {
+      Evidence.log(currentStation(), null, 'model_train', {});
+    });
+    wrap('paintPartTips', function () { renameOperables(); });
+    wrap('judgeFilters', function () {
+      var on = [];
+      try { on = (typeof activeFilters === 'function') ? activeFilters() : []; } catch (e) {}
+      Evidence.log(currentStation(), null, 'model_submit', { lensCombination: on });
+    });
+  }
+
+  /* --- generic decision capture: every activation of an interactive control --- */
+  function describeTarget(el) {
+    var d = {};
+    if (el.id) d.id = el.id;
+    if (el.dataset && el.dataset.key) d.key = el.dataset.key;
+    if (el.dataset && el.dataset.k) d.key = el.dataset.k;
+    if (el.dataset && el.dataset.av) d.avatar = el.dataset.av;
+    if (el.dataset && el.dataset.st) d.station = el.dataset.st;
+    var cls = (el.className && el.className.baseVal !== undefined) ? el.className.baseVal : (el.className || '');
+    if (cls) d.cls = String(cls).split(/\s+/).slice(0, 3).join(' ');
+    var label = el.getAttribute && (el.getAttribute('data-en') || el.getAttribute('aria-label'));
+    var txt = label || (el.textContent || '').trim().slice(0, 40);
+    if (txt) d.label = txt;
+    return d;
+  }
+
+  function logActivation(e) {
+    var el = e.target.closest && e.target.closest('[onclick],button,[role="button"],[data-ev]');
+    if (!el) return;
+    if (el.closest('#evPanel') || el.id === 'evToggle' || el.id === 'compDlg') return;
+    if (el.__v4lastLog && Date.now() - el.__v4lastLog < 120) return;  /* de-duplicate */
+    el.__v4lastLog = Date.now();
+    Evidence.log(currentStation(), null, 'interact', describeTarget(el));
+  }
+  document.addEventListener('click', logActivation, true);
+  document.addEventListener('pointerup', logActivation, true);
+
+  /* ============================================================
+     3. ACCESSIBILITY REMEDIATION
+     ============================================================ */
+
+  /* 3a. Text alternatives for iconographic content.
+     Section 4.5 substitutes icons for text; that lowers linguistic
+     load and raises the screen-reader barrier unless icons are named. */
+  var ICONS = {
+    '🤖': { en: 'robot', ar: 'روبوت' },
+    '🏭': { en: 'factory', ar: 'مصنع' },
+    '🔍': { en: 'magnifying glass', ar: 'عدسة مكبّرة' },
+    '📊': { en: 'bar chart', ar: 'مخطط أعمدة' },
+    '🔧': { en: 'wrench', ar: 'مفتاح ربط' },
+    '🧠': { en: 'brain', ar: 'دماغ' },
+    '⚖️': { en: 'balance scale', ar: 'ميزان' },
+    '🛡️': { en: 'shield', ar: 'درع' },
+    '📡': { en: 'satellite dish', ar: 'طبق استقبال' },
+    '✉️': { en: 'envelope', ar: 'ظرف' },
+    '🚪': { en: 'door', ar: 'باب' },
+    '🌍': { en: 'globe', ar: 'كرة أرضية' },
+    '♿': { en: 'accessibility symbol', ar: 'رمز إتاحة الوصول' },
+    '🎨': { en: 'artist palette', ar: 'لوحة ألوان' },
+    '🖼️': { en: 'framed picture', ar: 'صورة مؤطّرة' },
+    '🏫': { en: 'school', ar: 'مدرسة' },
+    '🌉': { en: 'bridge', ar: 'جسر' },
+    '⚡': { en: 'lightning bolt', ar: 'برق' },
+    '✓': { en: 'correct', ar: 'صحيح' },
+    '✔': { en: 'correct', ar: 'صحيح' },
+    '✕': { en: 'remove', ar: 'إزالة' },
+    '✗': { en: 'incorrect', ar: 'غير صحيح' },
+    '↺': { en: 'replay', ar: 'إعادة' },
+    '▶': { en: 'next', ar: 'التالي' },
+    '◀': { en: 'previous', ar: 'السابق' }
+  };
+
+  function nameIcons(root) {
+    var els = (root || document).querySelectorAll('.ico,.big,.emoji,.avatar,.robot');
+    Array.prototype.forEach.call(els, function (el) {
+      if (el.getAttribute('data-a11y-named')) return;
+      var ch = (el.textContent || '').trim();
+      var meta = ICONS[ch];
+      el.setAttribute('data-a11y-named', '1');
+      if (meta) {
+        el.setAttribute('role', 'img');
+        el.setAttribute('data-icon-en', meta.en);
+        el.setAttribute('data-icon-ar', meta.ar);
+        el.setAttribute('aria-label', meta[L()]);
+      } else if (ch && ch.length <= 4) {
+        /* unnamed decorative glyph: hide from assistive technology
+           only where a text sibling already carries the meaning */
+        var sib = el.parentElement && el.parentElement.querySelector('.nm,.hn,.blt,h2,h3');
+        if (sib) el.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  /* 3b. Keyboard operability for non-native interactive elements.
+     Ties into the tap path that already exists for every drag target. */
+  /* classes whose only activation path is pointerdown/pointerup
+     (the "tap alternative" the design already provides for drag targets) */
+  var POINTER_SEL = '.part,.hunt-tile,.dropslot,.slot,.chip,.lens,.filter,.tile,' +
+                    '.card,.opt,.cell,.block,.barrier,.policy,.recruit,.clue,.piece';
+
+  function synthTap(el) {
+    var r = el.getBoundingClientRect();
+    var o = { bubbles: true, cancelable: true, composed: true,
+              clientX: r.left + r.width / 2, clientY: r.top + r.height / 2,
+              pointerId: 1, pointerType: 'touch', isPrimary: true, button: 0 };
+    try {
+      el.dispatchEvent(new PointerEvent('pointerdown', o));
+      el.dispatchEvent(new PointerEvent('pointerup', o));
+    } catch (e) {
+      el.dispatchEvent(new MouseEvent('mousedown', o));
+      el.dispatchEvent(new MouseEvent('mouseup', o));
+    }
+  }
+
+  function hasClickHandler(el) {
+    return el.hasAttribute('onclick') || typeof el.onclick === 'function';
+  }
+
+  function makeOperable(root) {
+    var sel = '[onclick],[data-ev],.station,.avatar,.step,.dot,' + POINTER_SEL;
+    var els = (root || document).querySelectorAll(sel);
+    Array.prototype.forEach.call(els, function (el) {
+      if (el.getAttribute('data-a11y-op')) return;
+      var tag = el.tagName.toLowerCase();
+      var native = (tag === 'button' || tag === 'a' || tag === 'input' ||
+                    tag === 'select' || tag === 'textarea');
+      var clickable = native || hasClickHandler(el) || el.hasAttribute('data-ev') ||
+                      (el.matches && el.matches(POINTER_SEL));
+      if (!clickable) return;
+      el.setAttribute('data-a11y-op', '1');
+      if (!native) {
+        if (!el.hasAttribute('role')) el.setAttribute('role', 'button');
+        if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+      }
+      applyName(el);
+      if (el.classList.contains('locked')) el.setAttribute('aria-disabled', 'true');
+    });
+  }
+
+  /* Accessible name, in priority order:
+     the element's own bilingual tooltip, an explicit data-en, a text
+     child that already carries the meaning, then the glyph dictionary. */
+  var SLOT = {
+    en: { empty: 'empty', filled: 'contains', slot: 'Drop slot', of: 'of',
+          pipe: 'Pipeline position', feat: 'Feature area' },
+    ar: { empty: 'فارغ', filled: 'يحتوي', slot: 'خانة إفلات', of: 'من',
+          pipe: 'موضع في السلسلة', feat: 'منطقة السمات' }
+  };
+
+  /* Empty drop targets carry no text, so their name has to be positional. */
+  function slotName(el) {
+    var s = SLOT[L()];
+    var idx = el.dataset && (el.dataset.i !== undefined ? el.dataset.i : el.dataset.idx);
+    var kind = el.classList.contains('pslot') ? s.pipe
+             : (el.id === 'filterBox' || el.classList.contains('filterbox')) ? s.feat
+             : s.slot;
+    var sibs = el.parentElement
+      ? el.parentElement.querySelectorAll('.' + el.classList[0]).length : 0;
+    var pos = (idx !== undefined && idx !== null)
+      ? ' ' + (Number(idx) + 1) + (sibs > 1 ? ' ' + s.of + ' ' + sibs : '') : '';
+    var content = (el.textContent || '').trim();
+    return kind + pos + ' — ' + (content ? s.filled + ' ' + content : s.empty);
+  }
+
+  function applyName(el) {
+    if (el.classList && el.classList.contains('dropslot')) {
+      el.setAttribute('aria-label', slotName(el));
+      return;
+    }
+    var lab = el.dataset && el.dataset.tip;                    /* game tooltip */
+    if (!lab) lab = el.getAttribute('data-' + L()) || el.getAttribute('data-en');
+    if (!lab) {
+      var nm = el.querySelector && el.querySelector('.nm,.hn,.blt,.ttl,.lbl');
+      if (nm) lab = nm.getAttribute('data-' + L()) || nm.getAttribute('data-en') || nm.textContent;
+    }
+    if (!lab) {
+      var txt = (el.textContent || '').trim();
+      if (txt.length <= 4 && ICONS[txt]) lab = ICONS[txt][L()];
+      else lab = txt.slice(0, 70);
+    }
+    lab = (lab || '').trim();
+    if (lab) el.setAttribute('aria-label', lab);
+  }
+
+  /* re-derive names when the language flips */
+  function renameOperables() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-a11y-op]'), applyName);
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+    var el = e.target;
+    if (!el || !el.getAttribute) return;
+    if (el.getAttribute('role') !== 'button') return;
+    var tag = el.tagName.toLowerCase();
+    if (tag === 'button' || tag === 'a' || tag === 'input' || tag === 'textarea') return;
+    e.preventDefault();
+    if (hasClickHandler(el) || el.tagName.toLowerCase() === 'button') {
+      el.click();                    /* element listens for click */
+    } else {
+      synthTap(el);                  /* element listens for pointer events only */
+    }
+  });
+
+  /* 3c. Toggle state exposure */
+  function paintToggleStates(root) {
+    var els = (root || document).querySelectorAll('.lens,.filter,.chip,.opt,.avatar,.policy');
+    Array.prototype.forEach.call(els, function (el) {
+      if (el.getAttribute('role') !== 'button') return;
+      var on = el.classList.contains('on') || el.classList.contains('sel') ||
+               el.classList.contains('active') || el.classList.contains('picked');
+      el.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+
+  /* 3d. Live regions, landmarks, and progress semantics */
+  /* SC 4.1.2 — name every form control from nearby visible text */
+  function labelFormControls(root) {
+    var ctrls = (root || document).querySelectorAll('input,select,textarea');
+    Array.prototype.forEach.call(ctrls, function (el) {
+      if (el.getAttribute('data-a11y-lab')) return;
+      el.setAttribute('data-a11y-lab', '1');
+      if (el.labels && el.labels.length) return;
+      if (el.hasAttribute('aria-label') || el.hasAttribute('aria-labelledby')) return;
+      var lab = el.getAttribute('data-en-ph') || el.getAttribute('placeholder') || '';
+      if (!lab) {
+        var wrap = el.closest('.row,.field,.ctrl,.slider,.meter,.panel-row,div');
+        var t = wrap && wrap.querySelector('label,.lbl,.ttl,.nm,b,strong,span[data-en]');
+        if (t && t !== el) lab = (t.getAttribute('data-en') || t.textContent || '').trim();
+      }
+      if (!lab && el.id) lab = el.id.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ');
+      if (lab) el.setAttribute('aria-label', lab.slice(0, 70).trim());
+      if (el.type === 'range') {
+        el.setAttribute('aria-valuemin', el.min || '0');
+        el.setAttribute('aria-valuemax', el.max || '100');
+        el.setAttribute('aria-valuenow', el.value || '0');
+        el.addEventListener('input', function () {
+          el.setAttribute('aria-valuenow', el.value);
+        });
+      }
+    });
+  }
+
+  function installLandmarks() {
+    var say = document.getElementById('robotSay');
+    if (say && !say.getAttribute('role')) {
+      say.setAttribute('role', 'status');
+      say.setAttribute('aria-live', 'polite');
+      say.setAttribute('aria-atomic', 'true');
+    }
+    var stage = document.querySelector('.stage');
+    if (stage) stage.setAttribute('aria-label', 'Robot status');
+
+    var stations = document.querySelector('.stations');
+    if (stations && !stations.getAttribute('role')) {
+      stations.setAttribute('role', 'navigation');
+      stations.setAttribute('aria-label', 'Stations');
+    }
+    var game = document.getElementById('gameArea');
+    if (game && !game.getAttribute('role')) {
+      game.setAttribute('role', 'main');
+      game.setAttribute('id', 'gameArea');
+    }
+
+    var bar = document.querySelector('.energy .bar');
+    var pct = document.getElementById('energyPct');
+    if (bar && pct) {
+      bar.setAttribute('role', 'progressbar');
+      bar.setAttribute('aria-valuemin', '0');
+      bar.setAttribute('aria-valuemax', '100');
+      bar.setAttribute('aria-valuenow', pct.textContent || '0');
+      bar.setAttribute('aria-label', 'Robot energy restored');
+    }
+
+    /* feedback surfaces announce without stealing focus */
+    ['#fb', '#feedback', '.feedback', '.fb', '.result', '#result', '.verdict']
+      .forEach(function (s) {
+        Array.prototype.forEach.call(document.querySelectorAll(s), function (el) {
+          if (!el.getAttribute('aria-live')) el.setAttribute('aria-live', 'polite');
+        });
+      });
+
+    /* skip link */
+    if (!document.getElementById('skipLink')) {
+      var sk = document.createElement('a');
+      sk.id = 'skipLink';
+      sk.href = '#gameArea';
+      sk.className = 'v4-skip';
+      sk.textContent = T('skip');
+      document.body.insertBefore(sk, document.body.firstChild);
+    }
+  }
+
+  function syncProgressbar() {
+    var bar = document.querySelector('.energy .bar');
+    var pct = document.getElementById('energyPct');
+    if (bar && pct) bar.setAttribute('aria-valuenow', pct.textContent || '0');
+  }
+
+  /* ============================================================
+     4. COMPETENCY PROVENANCE TOOLTIP
+     Every station tag becomes a control that discloses the
+     canonical competency name, its domain, its definition, and the
+     Bloom levels the station realises.
+     ============================================================ */
+  function bloomFor(panel) {
+    /* the station card carrying the same index holds the level list */
+    var id = panel && panel.id;                    /* e.g. "p0" */
+    if (!id) return '';
+    var n = id.replace(/[^0-9]/g, '');
+    var card = document.querySelector('.station[data-st="' + n + '"] .bloom');
+    return card ? card.textContent.trim() : '';
+  }
+
+  function buildTooltips() {
+    var tags = document.querySelectorAll('.tag[data-comp]');
+    Array.prototype.forEach.call(tags, function (tag) {
+      if (tag.getAttribute('data-a11y-tip')) return;
+      tag.setAttribute('data-a11y-tip', '1');
+      tag.setAttribute('role', 'button');
+      tag.setAttribute('tabindex', '0');
+      tag.setAttribute('aria-haspopup', 'dialog');
+      tag.classList.add('v4-tag');
+
+      var mark = document.createElement('span');
+      mark.className = 'v4-tagi';
+      mark.setAttribute('aria-hidden', 'true');
+      mark.textContent = 'ⓘ';
+      tag.appendChild(mark);
+
+      tag.addEventListener('click', function () { openComp(tag); });
+      tag.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openComp(tag); }
+      });
+    });
+  }
+
+  /* ---- SC 1.4.3 contrast remediation, computed per element ----
+     Station tags use small bold text on saturated fills. Rather than
+     recolour by hand, measure the rendered pair and darken the fill
+     until it clears 4.5:1, preserving the existing colour coding. */
+  function parseRGB(str) {
+    var m = /rgba?\(([^)]+)\)/.exec(str || '');
+    if (!m) return null;
+    var p = m[1].split(',').map(function (x) { return parseFloat(x); });
+    return { r: p[0], g: p[1], b: p[2], a: (p.length > 3 ? p[3] : 1) };
+  }
+  function relLum(c) {
+    var f = function (v) {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  }
+  function ratio(a, b) {
+    var la = relLum(a), lb = relLum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+  function fixContrast(el) {
+    if (el.getAttribute('data-a11y-contrast')) return;
+    var cs = getComputedStyle(el);
+    var fg = parseRGB(cs.color);
+    var bg = parseRGB(cs.backgroundColor);
+    if (!fg || !bg || bg.a === 0) return;
+    el.setAttribute('data-a11y-contrast', '1');
+    if (ratio(fg, bg) >= 4.5) return;
+    /* try the other text colour first — cheapest and keeps the fill intact */
+    var white = { r: 255, g: 255, b: 255 }, black = { r: 17, g: 17, b: 17 };
+    var best = ratio(white, bg) >= ratio(black, bg) ? white : black;
+    if (ratio(best, bg) >= 4.5) {
+      el.style.color = (best === white ? '#fff' : '#111');
+      return;
+    }
+    /* otherwise step the fill toward the end that helps, up to 24 steps */
+    var toward = (best === white) ? 0 : 255;
+    var cur = { r: bg.r, g: bg.g, b: bg.b };
+    for (var i = 0; i < 24 && ratio(best, cur) < 4.5; i++) {
+      cur.r += (toward - cur.r) * 0.12;
+      cur.g += (toward - cur.g) * 0.12;
+      cur.b += (toward - cur.b) * 0.12;
+    }
+    el.style.color = (best === white ? '#fff' : '#111');
+    el.style.backgroundColor = 'rgb(' + Math.round(cur.r) + ',' +
+                               Math.round(cur.g) + ',' + Math.round(cur.b) + ')';
+  }
+  function fixAllContrast(root) {
+    var els = (root || document).querySelectorAll('.tag,.bloom,.chip,.pill,.badge,.note,.hint');
+    Array.prototype.forEach.call(els, fixContrast);
+  }
+
+  var lastFocus = null;
+  function openComp(tag) {
+    var code = tag.getAttribute('data-comp');
+    var rec = AIEDF[code];
+    if (!rec) return;
+    var m = rec[L()];
+    var panel = tag.closest('.panel');
+    var bloom = bloomFor(panel);
+
+    lastFocus = tag;
+    var dlg = document.getElementById('compDlg');
+    dlg.querySelector('.v4-dlg-name').textContent = m.name;
+    dlg.querySelector('.v4-dlg-domain').textContent = m.domain;
+    dlg.querySelector('.v4-dlg-def').textContent = m.def;
+    dlg.querySelector('.v4-dlg-bloomlab').textContent = T('bloom');
+    dlg.querySelector('.v4-dlg-bloom').textContent = bloom || '—';
+    dlg.querySelector('.v4-dlg-src').textContent = T('src');
+    dlg.querySelector('.v4-dlg-close').textContent = T('close');
+    dlg.hidden = false;
+    dlg.querySelector('.v4-dlg-close').focus();
+    Evidence.log(currentStation(), null, 'competency_definition_opened', { competency: code });
+  }
+  function closeComp() {
+    var dlg = document.getElementById('compDlg');
+    if (!dlg || dlg.hidden) return;
+    dlg.hidden = true;
+    if (lastFocus) lastFocus.focus();
+  }
+
+  /* ============================================================
+     5. CHROME:  dialog + evidence panel + styles
+     ============================================================ */
+  function injectChrome() {
+    var css = document.createElement('style');
+    css.textContent = [
+      '.v4-skip{position:absolute;left:-9999px;top:0;z-index:99999;background:#0b1020;color:#fff;padding:10px 16px;border-radius:0 0 8px 0;font:600 14px system-ui}',
+      '.v4-skip:focus{left:0}',
+      ':focus-visible{outline:3px solid #ffd54a !important;outline-offset:2px !important}',
+      '.v4-tag{cursor:pointer}',
+
+      '.v4-tagi{margin-inline-start:6px;opacity:.85;font-weight:700}',
+      '.v4-dlg[hidden]{display:none}',
+      '.v4-dlg{position:fixed;inset:0;z-index:99998;display:flex;align-items:center;justify-content:center;background:rgba(4,8,20,.72);padding:18px}',
+      '.v4-dlg-box{max-width:620px;width:100%;background:#111a2e;color:#e8eefc;border:1px solid #2b3c62;border-radius:16px;padding:20px 22px;box-shadow:0 24px 60px rgba(0,0,0,.5);font:15px/1.6 system-ui,Segoe UI,Tahoma,sans-serif}',
+      '.v4-dlg-name{font-size:19px;font-weight:800;margin:0 0 4px}',
+      '.v4-dlg-domain{font-size:13px;opacity:.8;margin-bottom:12px}',
+      '.v4-dlg-def{margin:0 0 14px}',
+      '.v4-dlg-bloomlab{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.7}',
+      '.v4-dlg-bloom{font-weight:700;margin:2px 0 14px}',
+      '.v4-dlg-src{font-size:12px;opacity:.65;margin-bottom:14px}',
+      '.v4-dlg-close{background:#2f6df6;color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;font-size:15px}',
+      '#evToggle{position:fixed;inset-block-end:14px;inset-inline-end:14px;z-index:9997;background:#16233d;color:#e8eefc;border:1px solid #2b3c62;border-radius:999px;padding:9px 15px;font:600 13px system-ui;cursor:pointer}',
+      '#evPanel[hidden]{display:none}',
+      '#evPanel{position:fixed;inset-block-end:62px;inset-inline-end:14px;z-index:9997;width:262px;background:#111a2e;color:#e8eefc;border:1px solid #2b3c62;border-radius:14px;padding:14px;font:13px/1.55 system-ui}',
+      '#evPanel h3{margin:0 0 6px;font-size:14px}',
+      '#evPanel button{width:100%;margin-top:7px;background:#2f6df6;color:#fff;border:0;border-radius:9px;padding:8px;font-weight:700;cursor:pointer;font-size:13px}',
+      '#evPanel button.ghost{background:transparent;border:1px solid #35496f;color:#cfe0ff}',
+      '#evPanel .note{opacity:.68;font-size:11.5px;margin-top:8px}'
+    ].join('\n');
+    document.head.appendChild(css);
+
+    var dlg = document.createElement('div');
+    dlg.id = 'compDlg';
+    dlg.className = 'v4-dlg';
+    dlg.hidden = true;
+    dlg.setAttribute('role', 'dialog');
+    dlg.setAttribute('aria-modal', 'true');
+    dlg.setAttribute('aria-labelledby', 'compDlgName');
+    dlg.innerHTML =
+      '<div class="v4-dlg-box">' +
+        '<p class="v4-dlg-name" id="compDlgName"></p>' +
+        '<div class="v4-dlg-domain"></div>' +
+        '<p class="v4-dlg-def"></p>' +
+        '<div class="v4-dlg-bloomlab"></div>' +
+        '<div class="v4-dlg-bloom"></div>' +
+        '<div class="v4-dlg-src"></div>' +
+        '<button class="v4-dlg-close" type="button"></button>' +
+      '</div>';
+    document.body.appendChild(dlg);
+    dlg.querySelector('.v4-dlg-close').addEventListener('click', closeComp);
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) closeComp(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeComp(); });
+
+    var tgl = document.createElement('button');
+    tgl.id = 'evToggle';
+    tgl.type = 'button';
+    tgl.setAttribute('aria-expanded', 'false');
+    tgl.setAttribute('aria-controls', 'evPanel');
+    tgl.textContent = '📄 ' + T('evTitle');
+    document.body.appendChild(tgl);
+
+    var pan = document.createElement('div');
+    pan.id = 'evPanel';
+    pan.hidden = true;
+    pan.innerHTML =
+      '<h3 class="ev-t"></h3>' +
+      '<div><b id="evCount">0</b> <span class="ev-c"></span></div>' +
+      '<button type="button" id="evExport"></button>' +
+      '<button type="button" class="ghost" id="evClear"></button>' +
+      '<div class="note ev-n"></div>';
+    document.body.appendChild(pan);
+
+    function paintEvLabels() {
+      tgl.textContent = '📄 ' + T('evTitle');
+      pan.querySelector('.ev-t').textContent = T('evTitle');
+      pan.querySelector('.ev-c').textContent = T('evCount');
+      pan.querySelector('#evExport').textContent = T('evExport');
+      pan.querySelector('#evClear').textContent = T('evClear');
+      pan.querySelector('.ev-n').textContent = T('evNote');
+    }
+    paintEvLabels();
+    window.__v4PaintEvLabels = paintEvLabels;
+
+    tgl.addEventListener('click', function () {
+      pan.hidden = !pan.hidden;
+      tgl.setAttribute('aria-expanded', String(!pan.hidden));
+      Evidence.paintCount();
+    });
+    pan.querySelector('#evExport').addEventListener('click', function () { Evidence.exportJSON(); });
+    pan.querySelector('#evClear').addEventListener('click', function () { Evidence.clear(); });
+  }
+
+  /* ============================================================
+     6. LANGUAGE SYNC + OBSERVER + BOOT
+     ============================================================ */
+  function relocalise() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-icon-en]'), function (el) {
+      el.setAttribute('aria-label', el.getAttribute('data-icon-' + L()) || '');
+    });
+    renameOperables();
+    var sk = document.getElementById('skipLink');
+    if (sk) sk.textContent = T('skip');
+    if (window.__v4PaintEvLabels) window.__v4PaintEvLabels();
+    closeComp();
+  }
+
+  function refresh(root) {
+    nameIcons(root);
+    makeOperable(root);
+    labelFormControls(root);
+    fixAllContrast(root);
+    paintToggleStates(root);
+    buildTooltips();
+    syncProgressbar();
+  }
+
+  function boot() {
+    injectChrome();
+    installLandmarks();
+    refresh(document);
+    installEvidenceHooks();
+    Evidence.paintCount();
+    Evidence.log(null, null, 'session_start', { lang: L() });
+
+    var mo = new MutationObserver(function (muts) {
+      var need = false;
+      muts.forEach(function (m) { if (m.addedNodes && m.addedNodes.length) need = true; });
+      if (need) refresh(document);
+      renameOperables();
+      paintToggleStates(document);
+      syncProgressbar();
+    });
+    mo.observe(document.body, { childList: true, subtree: true, attributes: true,
+                                attributeFilter: ['class'] });
+
+    /* keep ARIA in step with the existing language switch */
+    if (typeof window.applyLang === 'function') {
+      var origLang = window.applyLang;
+      window.applyLang = function () {
+        var r = origLang.apply(this, arguments);
+        relocalise();
+        refresh(document);
+        Evidence.log(currentStation(), null, 'language_switch', { lang: L() });
+        return r;
+      };
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+</script>
+</body>
+</html>
